@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SetupController;
 use App\Livewire\Author\SubmitPaper;
 use App\Livewire\Author\PaperList as AuthorPaperList;
 use App\Livewire\Author\PaperDetail as AuthorPaperDetail;
@@ -368,3 +369,17 @@ Route::get('/page/{page:slug}', function (\App\Models\Page $page) {
         ->ordered()->take(10)->get();
     return view(Template::view('page'), compact('page', 'relatedPages'));
 })->name('page.show');
+
+// ─── Setup Installer (cPanel deployment, tanpa terminal) ───────────────────
+Route::prefix('setup')->name('setup.')->group(function () {
+    Route::get  ('/',            [SetupController::class, 'index'])       ->name('index');
+    Route::post ('/auth',        [SetupController::class, 'auth'])        ->name('auth');
+    Route::post ('/requirements',[SetupController::class, 'requirements'])->name('requirements');
+    Route::post ('/save-env',    [SetupController::class, 'saveEnv'])     ->name('save-env');
+    Route::post ('/generate-key',[SetupController::class, 'generateKey']) ->name('generate-key');
+    Route::post ('/test-db',     [SetupController::class, 'testDb'])      ->name('test-db');
+    Route::post ('/migrate',     [SetupController::class, 'migrate'])     ->name('migrate');
+    Route::post ('/seed',        [SetupController::class, 'seed'])        ->name('seed');
+    Route::post ('/finalize',    [SetupController::class, 'finalize'])    ->name('finalize');
+    Route::post ('/reset-lock',  [SetupController::class, 'resetLock'])   ->name('reset-lock');
+});
