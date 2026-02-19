@@ -39,6 +39,33 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+
+                    {{-- Preview gambar yang sudah ada (mode edit) --}}
+                    @if($existing_cover_image)
+                        <div class="relative mb-2 inline-block">
+                            <img src="{{ asset('storage/' . $existing_cover_image) }}"
+                                 alt="Cover saat ini"
+                                 class="h-32 w-auto rounded-lg border border-gray-200 object-cover shadow-sm">
+                            <button type="button"
+                                    wire:click="removeExistingImage"
+                                    wire:confirm="Hapus gambar cover saat ini?"
+                                    class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow">
+                                ✕
+                            </button>
+                            <p class="text-xs text-gray-500 mt-1">Gambar saat ini. Upload baru untuk mengganti.</p>
+                        </div>
+                    @endif
+
+                    {{-- Preview gambar baru sebelum disimpan --}}
+                    @if($cover_image)
+                        <div class="mb-2">
+                            <img src="{{ $cover_image->temporaryUrl() }}"
+                                 alt="Preview"
+                                 class="h-32 w-auto rounded-lg border border-blue-200 object-cover shadow-sm">
+                            <p class="text-xs text-blue-600 mt-1">Preview gambar baru.</p>
+                        </div>
+                    @endif
+
                     <input wire:model="cover_image" type="file" accept="image/*" class="w-full text-sm">
                     @error('cover_image')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>

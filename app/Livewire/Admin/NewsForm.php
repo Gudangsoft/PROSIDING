@@ -7,6 +7,7 @@ use App\Models\Conference;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class NewsForm extends Component
 {
@@ -24,6 +25,7 @@ class NewsForm extends Component
     public bool $is_pinned = false;
     public string $conference_id = '';
     public $cover_image;
+    public ?string $existing_cover_image = null;
 
     public function mount(?News $news = null)
     {
@@ -40,6 +42,18 @@ class NewsForm extends Component
                 'is_pinned' => $news->is_pinned,
                 'conference_id' => (string) ($news->conference_id ?? ''),
             ]);
+            $this->existing_cover_image = $news->cover_image;
+        }
+    }
+
+    public function removeExistingImage()
+    {
+        if ($this->existing_cover_image) {
+            Storage::disk('public')->delete($this->existing_cover_image);
+            $this->existing_cover_image = null;
+            if ($this->isEdit) {
+                $this->news->update(['cover_image' => null]);
+            }
         }
     }
 
@@ -65,7 +79,14 @@ class NewsForm extends Component
         ];
 
         if ($this->cover_image) {
+            // Hapus gambar lama sebelum simpan yang baru
+            if ($this->existing_cover_image) {
+                Storage::disk('public')->delete($this->existing_cover_image);
+            }
             $data['cover_image'] = $this->cover_image->store('news', 'public');
+        } elseif ($this->existing_cover_image === null && $this->isEdit) {
+            // Gambar dihapus manual (removeExistingImage dipanggil)
+            $data['cover_image'] = null;
         }
 
         if ($this->status === 'published') {
