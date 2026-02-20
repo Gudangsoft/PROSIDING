@@ -18,7 +18,7 @@ class Conference extends Model
         'payment_contact_phone', 'payment_instructions', 'payment_methods',
         'status', 'is_active', 'created_by',
         'loa_generation_mode', 'certificate_generation_mode',
-        'visible_sections',
+        'visible_sections', 'hidden_speaker_types',
     ];
 
     protected $casts = [
@@ -27,6 +27,7 @@ class Conference extends Model
         'is_active' => 'boolean',
         'payment_methods' => 'array',
         'visible_sections' => 'array',
+        'hidden_speaker_types' => 'array',
     ];
 
     /**
@@ -54,6 +55,18 @@ class Conference extends Model
             return true;
         }
         return in_array($sectionId, $this->visible_sections, true);
+    }
+
+    /**
+     * Check if a speaker type block should be visible on the public website.
+     * Returns true if hidden_speaker_types is null/empty or the type is NOT in the hidden list.
+     */
+    public function isSpeakerTypeVisible(string $type): bool
+    {
+        if (empty($this->hidden_speaker_types)) {
+            return true;
+        }
+        return !in_array($type, $this->hidden_speaker_types, true);
     }
 
     const STATUS_LABELS = [

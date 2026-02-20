@@ -92,6 +92,9 @@ class ConferenceForm extends Component
     // Visibility of sections on public website
     public array $visibleSections = [];
 
+    // Hidden speaker type blocks on public website
+    public array $hiddenSpeakerTypes = [];
+
     public function mount(?Conference $conference = null)
     {
         if ($conference && $conference->exists) {
@@ -195,6 +198,11 @@ class ConferenceForm extends Component
                 }
             } else {
                 $this->visibleSections = array_keys(\App\Models\Conference::SECTIONS);
+            }
+
+            // Load hidden speaker types
+            if (\Illuminate\Support\Facades\Schema::hasColumn('conferences', 'hidden_speaker_types')) {
+                $this->hiddenSpeakerTypes = $conference->hidden_speaker_types ?? [];
             }
 
             // Load registration packages
@@ -313,7 +321,16 @@ class ConferenceForm extends Component
     // -- Speakers --
     public function addSpeaker($type = 'keynote_speaker')
     {
-        $this->speakers[] = ['id' => null, 'type' => $type, 'name' => '', 'title' => '', 'institution' => '', 'topic' => '', 'bio' => '', 'existing_photo' => null, 'show_on_web' => true];
+        $this->speakers[] = ['id' => null, 'type' => $type, 'name' => '', 'title' => '', 'institution' => '', 'topic' => '', 'bio' => '', 'existing_photo' => null];
+    }
+
+    public function toggleSpeakerType(string $type): void
+    {
+        if (in_array($type, $this->hiddenSpeakerTypes, true)) {
+            $this->hiddenSpeakerTypes = array_values(array_filter($this->hiddenSpeakerTypes, fn($t) => $t !== $type));
+        } else {
+            $this->hiddenSpeakerTypes[] = $type;
+        }
     }
 
     public function removeSpeaker($index)
@@ -527,6 +544,11 @@ class ConferenceForm extends Component
         // Only include visible_sections if the column exists (production migration safety)
         if (\Illuminate\Support\Facades\Schema::hasColumn('conferences', 'visible_sections')) {
             $data['visible_sections'] = $this->visibleSections;
+        }
+
+        // Only include hidden_speaker_types if the column exists
+        if (\Illuminate\Support\Facades\Schema::hasColumn('conferences', 'hidden_speaker_types')) {
+            $data['hidden_speaker_types'] = !empty($this->hiddenSpeakerTypes) ? array_values($this->hiddenSpeakerTypes) : null;
         }
 
         if ($this->cover_image) {

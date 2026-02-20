@@ -1,7 +1,7 @@
     {{-- ════════════════════════════════════════════════════
          SPEAKERS — Circular cards, clean
     ════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->isSectionVisible('speakers') && $activeConference->keynoteSpeakers->where('show_on_web', true)->count())
+    @if($activeConference && $activeConference->isSectionVisible('speakers') && $activeConference->keynoteSpeakers->count())
     <section id="speakers" class="py-20 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="text-center mb-14">
@@ -13,12 +13,12 @@
             @php
                 $speakerTypes = \App\Models\KeynoteSpeaker::TYPE_LABELS;
                 $typeIcons = \App\Models\KeynoteSpeaker::TYPE_ICONS;
-                $allSpeakers = $activeConference->keynoteSpeakers->where('show_on_web', true)->sortBy('sort_order');
+                $allSpeakers = $activeConference->keynoteSpeakers->sortBy('sort_order');
             @endphp
 
             @foreach($speakerTypes as $typeKey => $typeLabel)
                 @php $filtered = $allSpeakers->where('type', $typeKey); @endphp
-                @if($filtered->count())
+                @if($activeConference->isSpeakerTypeVisible($typeKey) && $filtered->count())
                 <div class="mb-14 last:mb-0">
                     <div class="flex items-center justify-center gap-3 mb-8">
                         <div class="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent to-teal-200"></div>

@@ -1,7 +1,7 @@
     {{-- ═══════════════════════════════════════════════════════════════════
          SPEAKERS — Grouped by type: Opening Speech, Keynote, Narasumber, Moderator & Host
     ═══════════════════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->isSectionVisible('speakers') && $activeConference->keynoteSpeakers->where('show_on_web', true)->count())
+    @if($activeConference && $activeConference->isSectionVisible('speakers') && $activeConference->keynoteSpeakers->count())
     <section id="speakers" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-14">
@@ -19,7 +19,7 @@
                     'moderator_host' => ['bg' => 'bg-orange-50', 'border' => 'border-orange-200', 'badge' => 'bg-orange-100 text-orange-700', 'ring' => 'border-orange-200 group-hover:border-orange-400', 'gradient' => 'from-orange-400 to-amber-500', 'text' => 'text-orange-600'],
                 ];
                 $typeIcons = \App\Models\KeynoteSpeaker::TYPE_ICONS;
-                $allSpeakers = $activeConference->keynoteSpeakers->where('show_on_web', true)->sortBy('sort_order');
+                $allSpeakers = $activeConference->keynoteSpeakers->sortBy('sort_order');
             @endphp
 
             @foreach($speakerTypes as $typeKey => $typeLabel)
@@ -30,7 +30,7 @@
                     $colCount = min($filtered->count(), 4);
                 @endphp
 
-                @if($filtered->count())
+                @if($activeConference->isSpeakerTypeVisible($typeKey) && $filtered->count())
                 <div class="mb-16 last:mb-0">
                     {{-- Section Header --}}
                     <div class="flex items-center justify-center gap-3 mb-8">
