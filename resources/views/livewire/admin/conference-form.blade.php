@@ -109,6 +109,17 @@
                     <option value="hybrid">Hybrid</option>
                 </select>
             </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Kegiatan</label>
+                <div class="flex gap-3">
+                    <label class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border text-sm font-medium transition {{ $conferenceType === 'nasional' ? 'bg-sky-50 border-sky-400 text-sky-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+                        <input type="radio" wire:model.live="conferenceType" value="nasional" class="accent-sky-600"> Nasional
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border text-sm font-medium transition {{ $conferenceType === 'internasional' ? 'bg-violet-50 border-violet-400 text-violet-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+                        <input type="radio" wire:model.live="conferenceType" value="internasional" class="accent-violet-600"> Internasional
+                    </label>
+                </div>
+            </div>
             @if($venue_type === 'offline' || $venue_type === 'hybrid')
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tempat / Venue</label>

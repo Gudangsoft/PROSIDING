@@ -121,6 +121,7 @@
                         <td class="px-6 py-4 text-gray-600 text-xs">
                             <span class="inline-flex items-center gap-1.5">
                                 <span class="px-1.5 py-0.5 rounded font-medium {{ \App\Models\Conference::VENUE_TYPE_COLORS[$conf->venue_type ?? 'offline'] ?? '' }}">{{ $conf->venue_type_label }}</span>
+                                <span class="px-1.5 py-0.5 rounded font-medium {{ \App\Models\Conference::CONFERENCE_TYPE_COLORS[$conf->conference_type ?? 'nasional'] ?? 'bg-sky-100 text-sky-700' }}">{{ $conf->conference_type_label }}</span>
                             </span>
                             @if($conf->venue || $conf->city)
                                 <br><span class="text-gray-500">{{ $conf->venue_display }}</span>
@@ -214,6 +215,7 @@
                                     <h4 class="text-xs font-semibold text-gray-500 uppercase">Informasi Umum</h4>
                                     <div class="space-y-1 text-sm">
                                         <p><span class="text-gray-500">Penyelenggara:</span> <span class="text-gray-800">{{ $conf->organizer ?? '-' }}</span></p>
+                                        <p><span class="text-gray-500">Jenis:</span> <span class="px-1.5 py-0.5 rounded text-xs font-medium {{ \App\Models\Conference::CONFERENCE_TYPE_COLORS[$conf->conference_type ?? 'nasional'] ?? 'bg-sky-100 text-sky-700' }}">{{ $conf->conference_type_label }}</span></p>
                                         <p><span class="text-gray-500">Lokasi:</span> <span class="text-gray-800">{{ $conf->venue_type_label }} — {{ $conf->venue_display }}</span></p>
                                         <p><span class="text-gray-500">Tanggal:</span> <span class="text-gray-800">{{ $conf->date_range }}</span></p>
                                     </div>

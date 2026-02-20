@@ -16,7 +16,7 @@ class Conference extends Model
         'organizer', 'cover_image', 'logo', 'brochure',
         'payment_bank_name', 'payment_bank_account', 'payment_account_holder',
         'payment_contact_phone', 'payment_instructions', 'payment_methods',
-        'status', 'is_active', 'created_by',
+        'status', 'conference_type', 'is_active', 'created_by',
         'loa_generation_mode', 'certificate_generation_mode',
         'visible_sections', 'hidden_speaker_types',
     ];
@@ -67,6 +67,21 @@ class Conference extends Model
             return true;
         }
         return !in_array($type, $this->hidden_speaker_types, true);
+    }
+
+    const CONFERENCE_TYPE_LABELS = [
+        'nasional'      => 'Nasional',
+        'internasional' => 'Internasional',
+    ];
+
+    const CONFERENCE_TYPE_COLORS = [
+        'nasional'      => 'bg-sky-100 text-sky-700',
+        'internasional' => 'bg-violet-100 text-violet-700',
+    ];
+
+    public function getConferenceTypeLabelAttribute(): string
+    {
+        return self::CONFERENCE_TYPE_LABELS[$this->conference_type ?? 'nasional'] ?? 'Nasional';
     }
 
     const STATUS_LABELS = [

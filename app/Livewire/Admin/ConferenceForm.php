@@ -40,6 +40,7 @@ class ConferenceForm extends Component
     public string $city = '';
     public string $organizer = '';
     public string $status = 'draft';
+    public string $conferenceType = 'nasional';
     public string $loaGenerationMode = 'manual';
     public string $certificateGenerationMode = 'manual';
     public $cover_image;
@@ -115,6 +116,7 @@ class ConferenceForm extends Component
                 'city' => $conference->city ?? '',
                 'organizer' => $conference->organizer ?? '',
                 'status' => $conference->status,
+                'conferenceType' => $conference->conference_type ?? 'nasional',
                 'loaGenerationMode' => $conference->loa_generation_mode ?? 'manual',
                 'certificateGenerationMode' => $conference->certificate_generation_mode ?? 'manual',
                 'existing_cover_image' => $conference->cover_image,
@@ -497,6 +499,7 @@ class ConferenceForm extends Component
             'city' => 'nullable|string|max:100',
             'organizer' => 'nullable|string|max:255',
             'status' => 'required|in:draft,published,archived',
+            'conferenceType' => 'required|in:nasional,internasional',
             'cover_image' => 'nullable|image|max:2048',
             'logo' => 'nullable|image|max:1024',
             'brochure' => 'nullable|image|max:5120',
@@ -527,6 +530,7 @@ class ConferenceForm extends Component
             'end_time' => $this->end_time ?: null,
             'venue' => $this->venue ?: null,
             'venue_type' => $this->venue_type,
+            'conference_type' => $this->conferenceType,
             'online_url' => $this->online_url ?: null,
             'city' => $this->city ?: null,
             'organizer' => $this->organizer ?: null,
