@@ -60,7 +60,8 @@ class PaperDetail extends Component
     public string $acceptLoaLink = '';
     public string $acceptInvoiceAmount = '';
     public string $acceptInvoiceDescription = 'Biaya publikasi prosiding';
-    public string $detectedPackageName = ''; // auto-detected from author's registration
+    public string $acceptPackageId = '';
+    public array $conferencePackages = [];
     public string $acceptSource = ''; // 'review' or 'skip'
     public bool $autoGenerateLoa = false;
 
@@ -79,8 +80,38 @@ class PaperDetail extends Component
         $this->newStatus = $paper->status;
         $this->publishArticleLink = $paper->article_link ?? '';
 
+        // Load conference packages for the accept-modal dropdown
+        if ($paper->conference) {
+            $this->conferencePackages = $paper->conference->registrationPackages()
+                ->where('is_active', true)
+                ->orderBy('sort_order')->orderBy('price')
+                ->get()
+                ->map(fn($pkg) => [
+                    'id'      => $pkg->id,
+                    'name'    => $pkg->name,
+                    'price'   => $pkg->price,
+                    'is_free' => (bool) $pkg->is_free,
+                    'label'   => $pkg->name . ' (' . ($pkg->is_free ? 'Gratis' : 'Rp ' . number_format($pkg->price, 0, ',', '.')) . ')',
+                ])
+                ->toArray();
+        }
+
         // Set initial workflow tab based on paper status
         $this->workflowTab = $this->getWorkflowTabForStatus($paper->status);
+    }
+
+    public function updatedAcceptPackageId($value)
+    {
+        if ($value) {
+            $pkg = collect($this->conferencePackages)->firstWhere('id', (int) $value);
+            if ($pkg) {
+                $this->acceptInvoiceAmount = $pkg['is_free'] ? '0' : (string) intval($pkg['price']);
+                $this->acceptInvoiceDescription = 'Biaya publikasi prosiding — ' . $pkg['name'];
+            }
+        } else {
+            $this->acceptInvoiceAmount = '';
+            $this->acceptInvoiceDescription = 'Biaya publikasi prosiding';
+        }
     }
 
     protected function getWorkflowTabForStatus(string $status): string
@@ -288,9 +319,9 @@ class PaperDetail extends Component
         $this->acceptLoaLink = '';
         $this->acceptInvoiceAmount = '';
         $this->acceptInvoiceDescription = 'Biaya publikasi prosiding';
-        $this->detectedPackageName = '';
-        
-        // Auto-fill invoice amount from author's registered package for this conference
+        $this->acceptPackageId = '';
+
+        // Auto pre-select package from author's participant payment for this conference
         $authorPayment = Payment::where('user_id', $this->paper->user_id)
             ->where('type', Payment::TYPE_PARTICIPANT)
             ->whereNotNull('registration_package_id')
@@ -300,9 +331,9 @@ class PaperDetail extends Component
 
         if ($authorPayment && $authorPayment->registrationPackage) {
             $pkg = $authorPayment->registrationPackage;
+            $this->acceptPackageId = (string) $pkg->id;
             $this->acceptInvoiceAmount = $pkg->is_free ? '0' : (string) intval($pkg->price);
             $this->acceptInvoiceDescription = 'Biaya publikasi prosiding — ' . $pkg->name;
-            $this->detectedPackageName = $pkg->name . ' (' . ($pkg->is_free ? 'Gratis' : 'Rp ' . number_format($pkg->price, 0, ',', '.')) . ')';
         }
 
         // Initialize based on conference mode
@@ -317,7 +348,7 @@ class PaperDetail extends Component
         $this->showAcceptModal = false;
         $this->acceptLoaLink = '';
         $this->acceptInvoiceAmount = '';
-        $this->detectedPackageName = '';
+        $this->acceptPackageId = '';
         $this->acceptSource = '';
         $this->autoGenerateLoa = false;
     }
