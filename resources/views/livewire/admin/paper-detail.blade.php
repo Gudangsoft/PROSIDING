@@ -1036,23 +1036,35 @@
                 <div class="border border-gray-200 rounded-lg p-4">
                     <p class="text-sm font-semibold text-gray-700 mb-3">📜 Pilih Mode LOA</p>
                     <div class="grid grid-cols-2 gap-3">
-                        <label class="flex items-start gap-2 p-3 border-2 rounded-lg cursor-pointer transition"
-                               :class="$wire.autoGenerateLoa ? '' : 'border-blue-500 bg-blue-50'">
-                            <input type="radio" wire:model.live="autoGenerateLoa" :value="false" class="mt-0.5">
+                        <div wire:click="$set('autoGenerateLoa', false)"
+                             class="flex items-start gap-2 p-3 border-2 rounded-lg cursor-pointer transition select-none
+                                    {{ !$autoGenerateLoa ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300' }}">
+                            <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0
+                                        {{ !$autoGenerateLoa ? 'border-blue-500' : 'border-gray-400' }}">
+                                @if(!$autoGenerateLoa)
+                                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                @endif
+                            </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-800">Manual</p>
                                 <p class="text-xs text-gray-500 mt-0.5">Input link LOA sendiri</p>
                             </div>
-                        </label>
-                        <label class="flex items-start gap-2 p-3 border-2 rounded-lg cursor-pointer transition"
-                               :class="$wire.autoGenerateLoa ? 'border-green-500 bg-green-50' : ''">
-                            <input type="radio" wire:model.live="autoGenerateLoa" :value="true" class="mt-0.5">
+                        </div>
+                        <div wire:click="$set('autoGenerateLoa', true)"
+                             class="flex items-start gap-2 p-3 border-2 rounded-lg cursor-pointer transition select-none
+                                    {{ $autoGenerateLoa ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300' }}">
+                            <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0
+                                        {{ $autoGenerateLoa ? 'border-green-500' : 'border-gray-400' }}">
+                                @if($autoGenerateLoa)
+                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                @endif
+                            </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-800">Auto-Generate</p>
                                 <p class="text-xs text-gray-500 mt-0.5">Sistem buat PDF otomatis</p>
                                 <span class="text-xs text-green-600 font-medium">✨ QR Code & Nomor Unik</span>
                             </div>
-                        </label>
+                        </div>
                     </div>
                     @if($conf && $conf->loa_generation_mode === 'auto')
                         <p class="text-xs text-blue-600 mt-2 flex items-center gap-1">
