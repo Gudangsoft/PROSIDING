@@ -1019,13 +1019,13 @@
 
     {{-- ═══ Accept Paper Modal (LOA + Invoice) ═══ --}}
     @if($showAcceptModal)
-    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
-            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+    <div class="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto my-auto flex flex-col">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 sticky top-0 bg-white rounded-t-lg z-10">
                 <h3 class="text-lg font-bold text-gray-800">Accept Paper — LOA & Tagihan</h3>
                 <button wire:click="closeAcceptModal" type="button" class="text-gray-400 hover:text-gray-600 text-xl cursor-pointer">&times;</button>
             </div>
-            <div class="p-5 space-y-4">
+            <div class="p-5 space-y-4 overflow-y-auto max-h-[75vh]">
                 <div class="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p class="text-sm text-green-800 font-medium">Paper: {{ \Illuminate\Support\Str::limit($paper->title, 60) }}</p>
                     <p class="text-xs text-green-600 mt-1">Author: {{ $paper->user->name }}</p>
@@ -1159,7 +1159,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="flex justify-end gap-2 px-5 py-4 border-t border-gray-200 bg-gray-50">
+            <div class="flex justify-end gap-2 px-5 py-4 border-t border-gray-200 bg-gray-50 rounded-b-lg shrink-0">
                 <button wire:click="confirmAccept" type="button" class="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded hover:bg-green-700 cursor-pointer">
                     <span wire:loading.remove wire:target="confirmAccept">
                         @if($autoGenerateLoa)
