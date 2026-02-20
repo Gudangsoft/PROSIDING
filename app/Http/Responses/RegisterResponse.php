@@ -11,8 +11,20 @@ class RegisterResponse implements RegisterResponseContract
     {
         $user = auth()->user();
 
-        // Participant: log out and redirect to login with pending message
+        // Free participant: payment already verified – keep logged in, go to dashboard
         if ($user && $user->role === 'participant') {
+            $hasVerifiedPayment = $user->payments()
+                ->where('status', 'verified')
+                ->exists();
+
+            if ($hasVerifiedPayment) {
+                return redirect()->route('dashboard')->with(
+                    'status',
+                    'Registrasi gratis berhasil! Selamat datang, ' . $user->name . '!'
+                );
+            }
+
+            // Paid participant: log out and wait for admin verification
             auth()->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

@@ -45,8 +45,16 @@ class CreateNewUser implements CreatesNewUsers
         $rules['other_info'] = ['nullable', 'string', 'max:1000'];
         $rules['signature'] = ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'];
 
-        // Participant-specific: proof of payment & amount required
-        if ($isParticipant) {
+        // Check if selected package is free (before validation)
+        $isFreePackage = false;
+        $packageObj = null;
+        if ($isParticipant && isset($input['registration_package_id'])) {
+            $packageObj = \App\Models\RegistrationPackage::find((int) $input['registration_package_id']);
+            $isFreePackage = $packageObj && $packageObj->is_free;
+        }
+
+        // Participant-specific: proof of payment & amount required only for paid packages
+        if ($isParticipant && !$isFreePackage) {
             $rules['payment_amount'] = ['required', 'numeric', 'min:1'];
             $rules['proof_of_payment'] = ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'];
         }
@@ -76,8 +84,25 @@ class CreateNewUser implements CreatesNewUsers
 
         $user = User::create($data);
 
-        // Create Payment record for participant with proof of payment
-        if ($isParticipant && !empty($data['proof_of_payment'])) {
+        // Create Payment record for participant
+        if ($isParticipant && $isFreePackage) {
+            // Free package: auto-create verified payment (no proof required)
+            $packageId = isset($input['registration_package_id']) ? (int) $input['registration_package_id'] : null;
+            $packageName = $packageObj ? ' — ' . $packageObj->name : '';
+            Payment::create([
+                'type' => Payment::TYPE_PARTICIPANT,
+                'user_id' => $user->id,
+                'paper_id' => null,
+                'registration_package_id' => $packageId,
+                'invoice_number' => Payment::generateInvoiceNumber(),
+                'amount' => 0,
+                'description' => 'Registrasi Gratis' . $packageName,
+                'status' => 'verified',
+                'payment_method' => 'Gratis',
+                'payment_proof' => null,
+                'paid_at' => now(),
+            ]);
+        } elseif ($isParticipant && !empty($data['proof_of_payment'])) {
             $packageId = isset($input['registration_package_id']) ? (int) $input['registration_package_id'] : null;
             $packageName = '';
             if ($packageId) {
@@ -103,7 +128,7 @@ class CreateNewUser implements CreatesNewUsers
             userId: $user->id,
             type: 'success',
             title: 'Selamat Datang! 🎉',
-            message: 'Akun Anda telah berhasil didaftarkan. ' . ($isParticipant ? 'Bukti pembayaran Anda sudah diterima dan akan segera diverifikasi.' : 'Silakan login dan mulai submit paper Anda.'),
+            message: 'Akun Anda telah berhasil didaftarkan. ' . ($isFreePackage ? 'Paket gratis Anda sudah aktif, selamat bergabung!' : ($isParticipant ? 'Bukti pembayaran Anda sudah diterima dan akan segera diverifikasi.' : 'Silakan login dan mulai submit paper Anda.')),
             actionUrl: url('/dashboard'),
             actionText: 'Ke Dashboard'
         );

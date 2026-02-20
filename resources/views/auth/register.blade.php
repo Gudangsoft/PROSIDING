@@ -11,7 +11,7 @@
     }
     $defaultRole = $preselectedPackage ? 'participant' : old('role', 'author');
 @endphp
-<div class="bg-white shadow-2xl p-8 sm:p-12 max-w-4xl mx-auto" style="border-radius: 16px;" x-data="registerForm('{{ $defaultRole }}', {{ $preselectedPackage ? $preselectedPackage->price : 'null' }})">
+<div class="bg-white shadow-2xl p-8 sm:p-12 max-w-4xl mx-auto" style="border-radius: 16px;" x-data="registerForm('{{ $defaultRole }}', {{ $preselectedPackage ? $preselectedPackage->price : 'null' }}, {{ $preselectedPackage && $preselectedPackage->is_free ? 'true' : 'false' }})">
     <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Formulir Pendaftaran</h2>
 
     @if($preselectedPackage)
@@ -214,8 +214,8 @@
                 @enderror
             </div>
 
-            {{-- Payment Amount (participant) --}}
-            <div class="mb-1" x-show="role === 'participant'" x-transition>
+            {{-- Payment Amount (participant) - hidden when free package --}}
+            <div class="mb-1" x-show="role === 'participant' && !isFree" x-transition>
                 <label for="payment_amount" class="block text-base font-medium text-gray-700 mb-2">
                     Nominal Pembayaran (Rp) <span class="text-red-500">*</span>
                 </label>
@@ -230,8 +230,8 @@
                 @enderror
             </div>
 
-            {{-- Proof of Payment (participant) --}}
-            <div class="mb-1" x-show="role === 'participant'" x-transition>
+            {{-- Proof of Payment (participant) - hidden when free package --}}
+            <div class="mb-1" x-show="role === 'participant' && !isFree" x-transition>
                 <label for="proof_of_payment" class="block text-base font-medium text-gray-700 mb-2">
                     Bukti Pembayaran <span class="text-red-500">*</span>
                 </label>
@@ -263,8 +263,21 @@
             </div>
         </div>
 
+        {{-- Free Package Notice --}}
+        <div x-show="role === 'participant' && isFree" x-transition
+            class="mt-4 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+            <div class="mt-0.5 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+                <p class="font-semibold text-emerald-800">Pendaftaran Gratis — Tidak Perlu Bukti Pembayaran</p>
+                <p class="text-sm text-emerald-600 mt-0.5">Akun Anda akan langsung aktif setelah mendaftar. Klik tombol di bawah untuk melanjutkan.</p>
+            </div>
+        </div>
+
         <div class="mt-8">
-            <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3.5 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all shadow-md text-lg">
+            <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3.5 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all shadow-md text-lg"
+                x-text="(role === 'participant' && isFree) ? 'Daftar Gratis ✓' : 'Daftar'">
                 Daftar
             </button>
         </div>
@@ -277,10 +290,11 @@
 </div>
 
 <script>
-function registerForm(defaultRole, packageAmount) {
+function registerForm(defaultRole, packageAmount, isFree) {
     return {
         role: defaultRole || '{{ old('role', 'author') }}',
         packageAmount: packageAmount || null,
+        isFree: isFree || false,
         paymentPreview: null,
         signaturePreview: null,
         previewPayment(e) {
