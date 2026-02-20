@@ -42,6 +42,7 @@
                 'guidelines' => ['label' => 'Panduan', 'count' => null, 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
                 'templates' => ['label' => 'Template Luaran', 'count' => count($deliverableTemplates), 'icon' => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'],
                 'journals' => ['label' => 'Jurnal Publikasi', 'count' => count($journals), 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'],
+                'visibility' => ['label' => 'Tampilkan di Web', 'count' => null, 'icon' => 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'],
             ];
         @endphp
         @foreach($tabConfig as $tab => $cfg)
@@ -940,6 +941,85 @@
     </div>
     @endif
 
+    {{-- TAB: Tampilkan di Web --}}
+    @if($activeTab === 'visibility')
+    <div class="bg-white rounded-xl shadow-sm border p-6">
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800">Tampilkan di Web</h3>
+            <p class="text-sm text-gray-500 mt-1">Pilih bagian yang ingin ditampilkan di halaman publik website. Centang bagian yang ingin diaktifkan, hapus centang untuk menyembunyikannya.</p>
+        </div>
+
+        @php
+            $sectionList = \App\Models\Conference::SECTIONS;
+            $sectionIcons = [
+                'hero'          => 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z',
+                'info_cards'    => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+                'about'         => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                'speakers'      => 'M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z',
+                'committees'    => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+                'news'          => 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 12h6m-6 4h6',
+                'registration'  => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
+                'journals'      => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+                'cta'           => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.952 9.168-4.875',
+            ];
+            $sectionDescriptions = [
+                'hero'          => 'Banner utama / slider gambar di bagian atas halaman.',
+                'info_cards'    => 'Kartu informasi tanggal penting, publikasi, dan informasi singkat konferensi.',
+                'about'         => 'Deskripsi lengkap, tema, topik, dan informasi konferensi.',
+                'speakers'      => 'Daftar keynote speaker, narasumber, moderator/host.',
+                'committees'    => 'Daftar panitia organizing dan scientific committee.',
+                'news'          => 'Berita terbaru dan pengumuman untuk pengunjung.',
+                'registration'  => 'Paket harga dan biaya pendaftaran.',
+                'journals'      => 'Informasi jurnal publikasi terindeks.',
+                'cta'           => 'Tombol ajakan untuk submit makalah / mendaftar.',
+            ];
+        @endphp
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($sectionList as $sectionId => $sectionLabel)
+            @php $isVisible = in_array($sectionId, $visibleSections); @endphp
+            <label class="flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all
+                {{ $isVisible ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-gray-50 opacity-70' }}">
+                <input type="checkbox"
+                    wire:model.live="visibleSections"
+                    value="{{ $sectionId }}"
+                    class="mt-0.5 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <svg class="w-4 h-4 {{ $isVisible ? 'text-blue-600' : 'text-gray-400' }} shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sectionIcons[$sectionId] ?? '' }}"/>
+                        </svg>
+                        <span class="text-sm font-semibold {{ $isVisible ? 'text-blue-800' : 'text-gray-600' }}">{{ $sectionLabel }}</span>
+                    </div>
+                    <p class="text-xs {{ $isVisible ? 'text-blue-600' : 'text-gray-400' }} leading-relaxed">
+                        {{ $sectionDescriptions[$sectionId] ?? '' }}
+                    </p>
+                </div>
+                @if($isVisible)
+                <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                @else
+                <svg class="w-5 h-5 text-gray-300 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                @endif
+            </label>
+            @endforeach
+        </div>
+
+        <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+            <svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="text-sm text-amber-700">
+                <p class="font-semibold">Keterangan</p>
+                <p class="mt-0.5">Pengaturan ini mengontrol bagian yang tampil di halaman utama website publik. Bagian yang tidak dicentang akan disembunyikan dari pengunjung. Urutan tampilan diatur melalui <strong>Pengaturan Tema</strong>.</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Save Button --}}
     <div class="mt-6 flex justify-between items-center">
         <a href="{{ route('admin.conferences') }}" class="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50 inline-flex items-center gap-2">
@@ -950,7 +1030,7 @@
             {{-- Tab navigation hints --}}
             <div class="hidden sm:flex items-center gap-1 text-xs text-gray-400">
                 @php
-                    $tabs = ['general', 'dates', 'committees', 'topics', 'speakers', 'pricing', 'reviewers', 'guidelines', 'templates', 'journals'];
+                    $tabs = ['general', 'dates', 'committees', 'topics', 'speakers', 'pricing', 'reviewers', 'guidelines', 'templates', 'journals', 'visibility'];
                     $currentIdx = array_search($activeTab, $tabs);
                 @endphp
                 @if($currentIdx > 0)

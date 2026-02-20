@@ -89,6 +89,9 @@ class ConferenceForm extends Component
     // Active tab
     public string $activeTab = 'general';
 
+    // Visibility of sections on public website
+    public array $visibleSections = [];
+
     public function mount(?Conference $conference = null)
     {
         if ($conference && $conference->exists) {
@@ -182,6 +185,13 @@ class ConferenceForm extends Component
             // Load payment methods
             $this->paymentMethods = $conference->payment_methods ?? [];
 
+            // Load visible sections (default: all visible)
+            if ($conference->visible_sections !== null) {
+                $this->visibleSections = $conference->visible_sections;
+            } else {
+                $this->visibleSections = array_keys(\App\Models\Conference::SECTIONS);
+            }
+
             // Load registration packages
             $this->packages = $conference->registrationPackages->map(fn($p) => [
                 'id' => $p->id,
@@ -202,6 +212,11 @@ class ConferenceForm extends Component
             'institution' => $u->institution ?? '',
             'phone' => $u->phone ?? '',
         ])->toArray();
+
+        // Default visibleSections for new conferences
+        if (empty($this->visibleSections)) {
+            $this->visibleSections = array_keys(\App\Models\Conference::SECTIONS);
+        }
     }
 
     // -- Image removal --
@@ -502,6 +517,7 @@ class ConferenceForm extends Component
             'status' => $this->status,
             'loa_generation_mode' => $this->loaGenerationMode,
             'certificate_generation_mode' => $this->certificateGenerationMode,
+            'visible_sections' => $this->visibleSections,
         ];
 
         if ($this->cover_image) {

@@ -1,3 +1,4 @@
+@if(!$activeConference || $activeConference->isSectionVisible('cta'))
     {{-- ════════════════════════════════════════════════════
          CTA — Soft gradient
     ════════════════════════════════════════════════════ --}}
@@ -17,3 +18,5 @@
             </div>
         </div>
     </section>
+
+@endif

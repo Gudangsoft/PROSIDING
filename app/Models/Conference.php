@@ -18,6 +18,7 @@ class Conference extends Model
         'payment_contact_phone', 'payment_instructions', 'payment_methods',
         'status', 'is_active', 'created_by',
         'loa_generation_mode', 'certificate_generation_mode',
+        'visible_sections',
     ];
 
     protected $casts = [
@@ -25,7 +26,35 @@ class Conference extends Model
         'end_date' => 'date',
         'is_active' => 'boolean',
         'payment_methods' => 'array',
+        'visible_sections' => 'array',
     ];
+
+    /**
+     * All available sections that can be toggled on/off.
+     */
+    public const SECTIONS = [
+        'hero'          => 'Hero / Slider',
+        'info_cards'    => 'Info Cards (Tanggal Penting)',
+        'about'         => 'Tentang Konferensi',
+        'speakers'      => 'Keynote Speakers',
+        'committees'    => 'Komite / Panitia',
+        'news'          => 'Berita & Pengumuman',
+        'registration'  => 'Registrasi / Paket Harga',
+        'journals'      => 'Jurnal Publikasi',
+        'cta'           => 'Call to Action',
+    ];
+
+    /**
+     * Check if a specific section should be visible on the public website.
+     * Returns true if visible_sections is null (all visible) or the section ID is in the list.
+     */
+    public function isSectionVisible(string $sectionId): bool
+    {
+        if ($this->visible_sections === null) {
+            return true;
+        }
+        return in_array($sectionId, $this->visible_sections, true);
+    }
 
     const STATUS_LABELS = [
         'draft' => 'Draft',

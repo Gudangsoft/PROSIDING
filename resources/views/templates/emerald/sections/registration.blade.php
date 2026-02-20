@@ -1,7 +1,7 @@
     {{-- ════════════════════════════════════════════════════
          PRICING — Registration packages
     ════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->registrationPackages->where('is_active', true)->count())
+    @if($activeConference && $activeConference->isSectionVisible('registration') && $activeConference->registrationPackages->where('is_active', true)->count())
     <section id="pricing" class="py-20 bg-gray-50/60">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="text-center mb-14">

@@ -1,7 +1,7 @@
     {{-- ═══════════════════════════════════════════════════════════════════
          ABOUT CONFERENCE — Description + Theme + Info
     ═══════════════════════════════════════════════════════════════════ --}}
-    @if($activeConference)
+    @if($activeConference && $activeConference->isSectionVisible('about'))
     <section id="conference" class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 

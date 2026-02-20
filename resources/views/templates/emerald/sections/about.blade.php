@@ -1,7 +1,7 @@
     {{-- ════════════════════════════════════════════════════
          ABOUT CONFERENCE — Side-by-side elegant layout
     ════════════════════════════════════════════════════ --}}
-    @if($activeConference)
+    @if($activeConference && $activeConference->isSectionVisible('about'))
     <section id="about" class="py-20 bg-gray-50/60">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">

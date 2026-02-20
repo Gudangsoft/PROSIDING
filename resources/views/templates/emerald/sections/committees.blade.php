@@ -1,7 +1,7 @@
     {{-- ════════════════════════════════════════════════════
          COMMITTEES — Simple list cards
     ════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->committees->count())
+    @if($activeConference && $activeConference->isSectionVisible('committees') && $activeConference->committees->count())
     <section class="py-16 bg-gray-50/60">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="text-center mb-12">

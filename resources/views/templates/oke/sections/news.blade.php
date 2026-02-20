@@ -1,7 +1,7 @@
     {{-- ════════════════════════════════════════════════════
          NEWS & ANNOUNCEMENTS — Card grid
     ════════════════════════════════════════════════════ --}}
-    @if($latestNews->count() || $announcements->count())
+    @if(($latestNews->count() || $announcements->count()) && (!$activeConference || $activeConference->isSectionVisible('news')))
     <section id="news" class="py-20 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="text-center mb-14">

@@ -1,7 +1,7 @@
     {{-- ═══════════════════════════════════════════════════════════════════
          HERO SLIDER
     ═══════════════════════════════════════════════════════════════════ --}}
-    @if($sliders->count() > 0)
+    @if($sliders->count() > 0 && (!$activeConference || $activeConference->isSectionVisible('hero')))
     <section x-data="{
         current: 0,
         total: {{ $sliders->count() }},

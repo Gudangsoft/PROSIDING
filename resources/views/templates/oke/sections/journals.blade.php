@@ -1,7 +1,7 @@
     {{-- ════════════════════════════════════════════════════
          JOURNALS — Grid cards
     ════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->journalPublications->where('is_active', true)->count())
+    @if($activeConference && $activeConference->isSectionVisible('journals') && $activeConference->journalPublications->where('is_active', true)->count())
     <section id="journals" class="py-20 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="text-center mb-14">

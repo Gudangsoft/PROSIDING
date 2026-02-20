@@ -1,3 +1,4 @@
+@if(!$activeConference || $activeConference->isSectionVisible('info_cards'))
     {{-- ═══════════════════════════════════════════════════════════════════
          INFO CARDS — Tanggal Penting / Publikasi Prosiding / Makalah Terpilih
     ═══════════════════════════════════════════════════════════════════ --}}
@@ -82,3 +83,5 @@
             </div>
         </div>
     </section>
+
+@endif

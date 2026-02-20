@@ -1,7 +1,7 @@
     {{-- ════════════════════════════════════════════════════
          SPEAKERS — Circular cards, clean
     ════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->keynoteSpeakers->count())
+    @if($activeConference && $activeConference->isSectionVisible('speakers') && $activeConference->keynoteSpeakers->count())
     <section id="speakers" class="py-20 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="text-center mb-14">

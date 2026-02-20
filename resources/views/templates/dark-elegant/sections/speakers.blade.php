@@ -1,7 +1,7 @@
     {{-- ═══════════════════════════════════════════════════════════════════
          SPEAKERS — Grouped by type: Opening Speech, Keynote, Narasumber, Moderator & Host
     ═══════════════════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->keynoteSpeakers->count())
+    @if($activeConference && $activeConference->isSectionVisible('speakers') && $activeConference->keynoteSpeakers->count())
     <section id="speakers" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-14">

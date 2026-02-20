@@ -1,3 +1,4 @@
+@if(!$activeConference || $activeConference->isSectionVisible('info_cards'))
     {{-- ═══════════════════════════════════════════════════════════════════
          INFO CARDS — Tanggal Penting / Publikasi Prosiding / Makalah Terpilih
          (Referensi: semnas.iti.ac.id)
@@ -53,3 +54,5 @@
             </div>
         </div>
     </section>
+
+@endif

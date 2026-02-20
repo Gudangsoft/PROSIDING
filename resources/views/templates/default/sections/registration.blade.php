@@ -1,7 +1,7 @@
     {{-- ═══════════════════════════════════════════════════════════════════
          REGISTRATION / PRICING — Biaya Pendaftaran
     ═══════════════════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->registrationPackages->where('is_active', true)->count())
+    @if($activeConference && $activeConference->isSectionVisible('registration') && $activeConference->registrationPackages->where('is_active', true)->count())
     <section id="pricing" class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-14">

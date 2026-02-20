@@ -1,7 +1,7 @@
     {{-- ═══════════════════════════════════════════════════════════════════
          JURNAL PUBLIKASI — Journal Publications
     ═══════════════════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->journalPublications->where('is_active', true)->count())
+    @if($activeConference && $activeConference->isSectionVisible('journals') && $activeConference->journalPublications->where('is_active', true)->count())
     <section id="journals" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {{-- Section Header --}}

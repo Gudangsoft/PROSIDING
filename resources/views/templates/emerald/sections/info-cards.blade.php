@@ -1,3 +1,4 @@
+@if(!$activeConference || $activeConference->isSectionVisible('info_cards'))
     {{-- ════════════════════════════════════════════════════
          INFO STRIP — 3 columns, minimal card style
     ════════════════════════════════════════════════════ --}}
@@ -50,3 +51,5 @@
             </div>
         </div>
     </section>
+
+@endif

@@ -1,3 +1,4 @@
+@if(!$activeConference || $activeConference->isSectionVisible('cta'))
     {{-- ═══════════════════════════════════════════════════════════════════
          CTA — Call for Paper
     ═══════════════════════════════════════════════════════════════════ --}}
@@ -25,3 +26,5 @@
             </div>
         </div>
     </section>
+
+@endif
