@@ -67,9 +67,13 @@ class PaymentProof extends Component
     {
         if ($value) {
             $this->selectedPackage = RegistrationPackage::find($value);
-            $this->finalAmount = $this->selectedPackage->price;
-            $this->newAmount = $this->finalAmount;
-            
+            if ($this->selectedPackage->is_free) {
+                $this->finalAmount = 0;
+                $this->newAmount = 0;
+            } else {
+                $this->finalAmount = $this->selectedPackage->price;
+                $this->newAmount = $this->finalAmount;
+            }
             // Reset payment method selection when package changes
             $this->selectedPaymentMethodIndex = null;
         } else {
@@ -95,6 +99,51 @@ class PaymentProof extends Component
                 $this->newAmount = $this->finalAmount;
             }
         }
+    }
+
+    public function registerFree()
+    {
+        $this->validate([
+            'selectedPackageId' => ['required', 'exists:registration_packages,id'],
+        ], [
+            'selectedPackageId.required' => 'Pilih paket registrasi terlebih dahulu.',
+        ]);
+
+        // Double check the package is actually free
+        $pkg = RegistrationPackage::find($this->selectedPackageId);
+        if (!$pkg || !$pkg->is_free) {
+            $this->addError('selectedPackageId', 'Paket ini bukan paket gratis.');
+            return;
+        }
+
+        if ($this->payment) {
+            $this->payment->update([
+                'registration_package_id' => $this->selectedPackageId,
+                'amount' => 0,
+                'payment_method' => 'Gratis',
+                'status' => 'verified',
+                'paid_at' => now(),
+                'verified_at' => now(),
+                'admin_notes' => null,
+            ]);
+        } else {
+            $this->payment = Payment::create([
+                'type' => Payment::TYPE_PARTICIPANT,
+                'user_id' => Auth::id(),
+                'paper_id' => null,
+                'registration_package_id' => $this->selectedPackageId,
+                'invoice_number' => Payment::generateInvoiceNumber(),
+                'amount' => 0,
+                'description' => 'Registrasi gratis - ' . $pkg->name,
+                'status' => 'verified',
+                'payment_method' => 'Gratis',
+                'paid_at' => now(),
+                'verified_at' => now(),
+            ]);
+        }
+
+        session()->flash('success', 'Pendaftaran gratis berhasil dikonfirmasi. Akun Anda sudah aktif!');
+        $this->redirect(request()->url(), navigate: true);
     }
 
     public function reupload()

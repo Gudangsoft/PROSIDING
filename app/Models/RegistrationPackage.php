@@ -9,7 +9,7 @@ class RegistrationPackage extends Model
 {
     protected $fillable = [
         'conference_id', 'name', 'price', 'currency',
-        'description', 'features', 'is_featured',
+        'description', 'features', 'is_featured', 'is_free',
         'is_active', 'sort_order',
     ];
 
@@ -17,6 +17,7 @@ class RegistrationPackage extends Model
         'price' => 'decimal:2',
         'features' => 'array',
         'is_featured' => 'boolean',
+        'is_free' => 'boolean',
         'is_active' => 'boolean',
     ];
 
@@ -32,6 +33,7 @@ class RegistrationPackage extends Model
 
     public function getFormattedPriceAttribute(): string
     {
+        if ($this->is_free) return 'Gratis';
         return 'Rp. ' . number_format($this->price, 0, ',', '.');
     }
 }

@@ -173,7 +173,7 @@
                         <option value="">-- Pilih Paket --</option>
                         @foreach($packages as $pkg)
                             <option value="{{ $pkg->id }}">
-                                {{ $pkg->name }} - Rp {{ number_format($pkg->price, 0, ',', '.') }}
+                                {{ $pkg->name }} — {{ $pkg->is_free ? 'GRATIS' : 'Rp ' . number_format($pkg->price, 0, ',', '.') }}
                             </option>
                         @endforeach
                     </select>
@@ -213,11 +213,21 @@
 
                             <div class="mt-3 pt-3 border-t border-blue-200">
                                 <p class="text-xs text-gray-500">Harga Paket:</p>
-                                <p class="text-2xl font-bold text-blue-600">Rp {{ number_format($selectedPackage->price, 0, ',', '.') }}</p>
+                                @if($selectedPackage->is_free)
+                                    <span class="inline-flex items-center gap-1.5 mt-1 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-lg font-bold">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        GRATIS
+                                    </span>
+                                @else
+                                    <p class="text-2xl font-bold text-blue-600">Rp {{ number_format($selectedPackage->price, 0, ',', '.') }}</p>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {{-- Payment Methods and Amount (hidden for free packages) --}}
+                @if(!$selectedPackage->is_free)
 
                 {{-- Payment Methods (show if available) --}}
                 @if(count($paymentMethods) > 0)
@@ -270,9 +280,25 @@
                         <p class="text-2xl font-bold text-gray-800">Rp {{ number_format($finalAmount, 0, ',', '.') }}</p>
                     </div>
                 </div>
-                @endif
+                @endif {{-- end !is_free --}}
+                @endif {{-- end selectedPackage --}}
 
-                {{-- File Upload --}}
+                {{-- Free Package: Confirm without proof --}}
+                @if($selectedPackage && $selectedPackage->is_free)
+                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center">
+                    <svg class="w-10 h-10 text-emerald-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <p class="text-emerald-800 font-semibold">Paket ini <strong>GRATIS</strong> — tidak diperlukan bukti pembayaran.</p>
+                    <p class="text-emerald-700 text-sm mt-1">Klik tombol di bawah untuk langsung mengaktifkan akun Anda.</p>
+                </div>
+                <button type="button" wire:click="registerFree" wire:loading.attr="disabled"
+                    class="w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition text-sm disabled:opacity-50">
+                    <span wire:loading.remove wire:target="registerFree">Konfirmasi Pendaftaran Gratis</span>
+                    <span wire:loading wire:target="registerFree">Memproses...</span>
+                </button>
+                @else
+
+                {{-- Paid Package: File Upload --}}
+                @if(!$selectedPackage || !$selectedPackage->is_free)
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">File Bukti Pembayaran <span class="text-red-500">*</span></label>
                     <input type="file" wire:model="newProof" accept=".jpg,.jpeg,.png,.pdf"
@@ -280,14 +306,14 @@
                     <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maks 5MB.</p>
                     @error('newProof') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                 </div>
-
                 <div wire:loading wire:target="newProof" class="text-sm text-teal-600">Mengupload file...</div>
-
                 <button type="submit" wire:loading.attr="disabled"
                     class="w-full px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                     <span wire:loading.remove wire:target="reupload">Upload Bukti Pembayaran</span>
                     <span wire:loading wire:target="reupload">Menyimpan...</span>
                 </button>
+                @endif
+                @endif
             </form>
         </div>
     </div>

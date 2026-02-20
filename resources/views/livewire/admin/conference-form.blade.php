@@ -572,6 +572,10 @@
                         <span class="text-xs font-semibold text-gray-400 uppercase">Paket #{{ $index + 1 }}</span>
                         <div class="flex items-center gap-3">
                             <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" wire:model.live="packages.{{ $index }}.is_free" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                                <span class="text-xs font-medium text-emerald-700">Gratis</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" wire:model="packages.{{ $index }}.is_featured" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 <span class="text-xs text-gray-500">Featured</span>
                             </label>
@@ -590,8 +594,16 @@
                             <input wire:model="packages.{{ $index }}.name" type="text" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="cth: Peserta Seminar 2025">
                         </div>
                         <div>
+                            @if(!($pkg['is_free'] ?? false))
                             <label class="block text-xs font-medium text-gray-600 mb-1">Harga (Rp)</label>
                             <input wire:model="packages.{{ $index }}.price" type="number" min="0" step="1000" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="50000">
+                            @else
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Harga</label>
+                            <div class="flex items-center gap-2 w-full px-3 py-2 border border-emerald-300 bg-emerald-50 rounded-lg text-sm font-bold text-emerald-700">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                GRATIS
+                            </div>
+                            @endif
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Deskripsi Singkat</label>
