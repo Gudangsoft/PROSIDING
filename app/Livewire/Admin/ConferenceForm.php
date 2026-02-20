@@ -187,8 +187,12 @@ class ConferenceForm extends Component
             $this->paymentMethods = $conference->payment_methods ?? [];
 
             // Load visible sections (default: all visible)
-            if ($conference->visible_sections !== null) {
-                $this->visibleSections = $conference->visible_sections;
+            if (\Illuminate\Support\Facades\Schema::hasColumn('conferences', 'visible_sections')) {
+                if ($conference->visible_sections !== null) {
+                    $this->visibleSections = $conference->visible_sections;
+                } else {
+                    $this->visibleSections = array_keys(\App\Models\Conference::SECTIONS);
+                }
             } else {
                 $this->visibleSections = array_keys(\App\Models\Conference::SECTIONS);
             }
@@ -518,8 +522,12 @@ class ConferenceForm extends Component
             'status' => $this->status,
             'loa_generation_mode' => $this->loaGenerationMode,
             'certificate_generation_mode' => $this->certificateGenerationMode,
-            'visible_sections' => $this->visibleSections,
         ];
+
+        // Only include visible_sections if the column exists (production migration safety)
+        if (\Illuminate\Support\Facades\Schema::hasColumn('conferences', 'visible_sections')) {
+            $data['visible_sections'] = $this->visibleSections;
+        }
 
         if ($this->cover_image) {
             // Delete old file
@@ -699,8 +707,11 @@ class ConferenceForm extends Component
                 'topic' => $speaker['topic'] ?? null,
                 'bio' => $speaker['bio'] ?? null,
                 'sort_order' => $i,
-                'show_on_web' => isset($speaker['show_on_web']) ? (bool) $speaker['show_on_web'] : true,
             ];
+            // Only include show_on_web if the column exists (production migration safety)
+            if (\Illuminate\Support\Facades\Schema::hasColumn('keynote_speakers', 'show_on_web')) {
+                $speakerData['show_on_web'] = isset($speaker['show_on_web']) ? (bool) $speaker['show_on_web'] : true;
+            }
 
             // Handle speaker photo upload
             if (isset($this->speakerPhotos[$i]) && $this->speakerPhotos[$i]) {
