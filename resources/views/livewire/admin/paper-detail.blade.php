@@ -1124,8 +1124,18 @@
                 @endif
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tagihan (Rp) <span class="text-red-500">*</span></label>
-                    <input type="number" wire:model="acceptInvoiceAmount" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="500000">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tagihan</label>
+                    @if($acceptInvoiceAmount !== '')
+                        <div class="w-full px-3 py-2.5 bg-emerald-50 border border-emerald-300 rounded text-sm font-bold text-emerald-800">
+                            {{ $acceptInvoiceAmount == '0' ? 'Gratis' : 'Rp ' . number_format((int)$acceptInvoiceAmount, 0, ',', '.') }}
+                        </div>
+                        <input type="hidden" wire:model="acceptInvoiceAmount">
+                    @else
+                        <div class="w-full px-3 py-2.5 bg-gray-50 border border-dashed border-gray-300 rounded text-sm text-gray-400 italic">
+                            — Pilih paket registrasi di atas —
+                        </div>
+                        <input type="hidden" wire:model="acceptInvoiceAmount">
+                    @endif
                     @error('acceptInvoiceAmount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
 
