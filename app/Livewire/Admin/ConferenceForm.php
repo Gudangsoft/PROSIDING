@@ -141,6 +141,7 @@ class ConferenceForm extends Component
                 'id' => $s->id, 'type' => $s->type ?? 'keynote_speaker', 'name' => $s->name, 'title' => $s->title ?? '',
                 'institution' => $s->institution ?? '', 'topic' => $s->topic ?? '', 'bio' => $s->bio ?? '',
                 'existing_photo' => $s->photo ?? null,
+                'show_on_web' => $s->show_on_web ?? true,
             ])->toArray();
 
             // Load guideline
@@ -308,7 +309,7 @@ class ConferenceForm extends Component
     // -- Speakers --
     public function addSpeaker($type = 'keynote_speaker')
     {
-        $this->speakers[] = ['id' => null, 'type' => $type, 'name' => '', 'title' => '', 'institution' => '', 'topic' => '', 'bio' => '', 'existing_photo' => null];
+        $this->speakers[] = ['id' => null, 'type' => $type, 'name' => '', 'title' => '', 'institution' => '', 'topic' => '', 'bio' => '', 'existing_photo' => null, 'show_on_web' => true];
     }
 
     public function removeSpeaker($index)
@@ -698,6 +699,7 @@ class ConferenceForm extends Component
                 'topic' => $speaker['topic'] ?? null,
                 'bio' => $speaker['bio'] ?? null,
                 'sort_order' => $i,
+                'show_on_web' => isset($speaker['show_on_web']) ? (bool) $speaker['show_on_web'] : true,
             ];
 
             // Handle speaker photo upload

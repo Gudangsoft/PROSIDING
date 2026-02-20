@@ -1,7 +1,7 @@
     {{-- ════════════════════════════════════════════════════
          SPEAKERS — Circular cards, clean
     ════════════════════════════════════════════════════ --}}
-    @if($activeConference && $activeConference->isSectionVisible('speakers') && $activeConference->keynoteSpeakers->count())
+    @if($activeConference && $activeConference->isSectionVisible('speakers') && $activeConference->keynoteSpeakers->where('show_on_web', true)->count())
     <section id="speakers" class="py-20 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="text-center mb-14">
@@ -13,7 +13,7 @@
             @php
                 $speakerTypes = \App\Models\KeynoteSpeaker::TYPE_LABELS;
                 $typeIcons = \App\Models\KeynoteSpeaker::TYPE_ICONS;
-                $allSpeakers = $activeConference->keynoteSpeakers->sortBy('sort_order');
+                $allSpeakers = $activeConference->keynoteSpeakers->where('show_on_web', true)->sortBy('sort_order');
             @endphp
 
             @foreach($speakerTypes as $typeKey => $typeLabel)

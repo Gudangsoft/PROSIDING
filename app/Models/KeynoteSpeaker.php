@@ -9,11 +9,12 @@ class KeynoteSpeaker extends Model
 {
     protected $fillable = [
         'conference_id', 'type', 'name', 'title', 'institution',
-        'bio', 'photo', 'topic', 'schedule', 'sort_order',
+        'bio', 'photo', 'topic', 'schedule', 'sort_order', 'show_on_web',
     ];
 
     protected $casts = [
         'schedule' => 'datetime',
+        'show_on_web' => 'boolean',
     ];
 
     const TYPE_LABELS = [
