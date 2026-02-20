@@ -61,6 +61,7 @@ class PaperDetail extends Component
     public string $acceptInvoiceAmount = '';
     public string $acceptInvoiceDescription = 'Biaya publikasi prosiding';
     public string $acceptPackageId = '';
+    public string $detectedPackageName = ''; // non-empty = auto-detected, skip dropdown
     public array $conferencePackages = [];
     public string $acceptSource = ''; // 'review' or 'skip'
     public bool $autoGenerateLoa = false;
@@ -320,6 +321,7 @@ class PaperDetail extends Component
         $this->acceptInvoiceAmount = '';
         $this->acceptInvoiceDescription = 'Biaya publikasi prosiding';
         $this->acceptPackageId = '';
+        $this->detectedPackageName = '';
 
         // Auto pre-select package from author's participant payment for this conference
         $authorPayment = Payment::where('user_id', $this->paper->user_id)
@@ -331,9 +333,10 @@ class PaperDetail extends Component
 
         if ($authorPayment && $authorPayment->registrationPackage) {
             $pkg = $authorPayment->registrationPackage;
-            $this->acceptPackageId = (string) $pkg->id;
-            $this->acceptInvoiceAmount = $pkg->is_free ? '0' : (string) intval($pkg->price);
+            $this->acceptPackageId      = (string) $pkg->id;
+            $this->acceptInvoiceAmount  = $pkg->is_free ? '0' : (string) intval($pkg->price);
             $this->acceptInvoiceDescription = 'Biaya publikasi prosiding — ' . $pkg->name;
+            $this->detectedPackageName  = $pkg->name . ' — ' . ($pkg->is_free ? 'Gratis' : 'Rp ' . number_format($pkg->price, 0, ',', '.'));
         }
 
         // Initialize based on conference mode
@@ -349,6 +352,7 @@ class PaperDetail extends Component
         $this->acceptLoaLink = '';
         $this->acceptInvoiceAmount = '';
         $this->acceptPackageId = '';
+        $this->detectedPackageName = '';
         $this->acceptSource = '';
         $this->autoGenerateLoa = false;
     }
