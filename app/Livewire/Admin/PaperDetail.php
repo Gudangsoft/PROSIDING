@@ -60,6 +60,8 @@ class PaperDetail extends Component
     public string $acceptLoaLink = '';
     public string $acceptInvoiceAmount = '';
     public string $acceptInvoiceDescription = 'Biaya publikasi prosiding';
+    public string $acceptPackageId = '';  // selected registration package
+    public array $conferencePackages = []; // packages for dropdown
     public string $acceptSource = ''; // 'review' or 'skip'
     public bool $autoGenerateLoa = false;
 
@@ -78,8 +80,38 @@ class PaperDetail extends Component
         $this->newStatus = $paper->status;
         $this->publishArticleLink = $paper->article_link ?? '';
 
+        // Load conference registration packages for the accept-modal dropdown
+        if ($paper->conference) {
+            $this->conferencePackages = $paper->conference->registrationPackages()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('price')
+                ->get()
+                ->map(fn($pkg) => [
+                    'id'      => $pkg->id,
+                    'name'    => $pkg->name,
+                    'price'   => $pkg->price,
+                    'is_free' => (bool) $pkg->is_free,
+                    'label'   => $pkg->name . ' (' . ($pkg->is_free ? 'Gratis' : 'Rp ' . number_format($pkg->price, 0, ',', '.')) . ')',
+                ])
+                ->toArray();
+        }
+
         // Set initial workflow tab based on paper status
         $this->workflowTab = $this->getWorkflowTabForStatus($paper->status);
+    }
+
+    public function updatedAcceptPackageId($value)
+    {
+        if ($value) {
+            $pkg = collect($this->conferencePackages)->firstWhere('id', (int) $value);
+            if ($pkg) {
+                $this->acceptInvoiceAmount = $pkg['is_free'] ? '0' : (string) intval($pkg['price']);
+                $this->acceptInvoiceDescription = 'Biaya publikasi prosiding — ' . $pkg['name'];
+            }
+        } else {
+            $this->acceptInvoiceAmount = '';
+        }
     }
 
     protected function getWorkflowTabForStatus(string $status): string
@@ -287,6 +319,7 @@ class PaperDetail extends Component
         $this->acceptLoaLink = '';
         $this->acceptInvoiceAmount = '';
         $this->acceptInvoiceDescription = 'Biaya publikasi prosiding';
+        $this->acceptPackageId = '';
         
         // Initialize based on conference mode
         $conference = $this->paper->conference;
@@ -300,6 +333,7 @@ class PaperDetail extends Component
         $this->showAcceptModal = false;
         $this->acceptLoaLink = '';
         $this->acceptInvoiceAmount = '';
+        $this->acceptPackageId = '';
         $this->acceptSource = '';
         $this->autoGenerateLoa = false;
     }

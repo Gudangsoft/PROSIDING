@@ -1088,6 +1088,17 @@
                 @endif
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Paket Registrasi (opsional)</label>
+                    <select wire:model.live="acceptPackageId" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                        <option value="">— Pilih paket (isi nominal otomatis) —</option>
+                        @foreach($conferencePackages as $pkg)
+                            <option value="{{ $pkg['id'] }}">{{ $pkg['label'] }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-400 mt-1">Pilih paket untuk mengisi nominal otomatis, atau kosongkan untuk isi manual.</p>
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tagihan (Rp) <span class="text-red-500">*</span></label>
                     <input type="number" wire:model="acceptInvoiceAmount" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="500000">
                     @error('acceptInvoiceAmount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
