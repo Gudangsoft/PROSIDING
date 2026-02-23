@@ -72,17 +72,18 @@
                                 <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                             </div>
                             <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">{{ __('welcome.conference.topik_bidang') }}</h3>
+                            <span class="ml-auto text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">{{ $activeConference->topics->count() }}</span>
                         </div>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="grid grid-cols-2 gap-x-3 gap-y-2">
                             @foreach($activeConference->topics->sortBy('sort_order') as $i => $topic)
                             @php
-                                $colors = ['bg-blue-50 text-blue-700 border-blue-200','bg-indigo-50 text-indigo-700 border-indigo-200','bg-violet-50 text-violet-700 border-violet-200','bg-purple-50 text-purple-700 border-purple-200','bg-cyan-50 text-cyan-700 border-cyan-200','bg-teal-50 text-teal-700 border-teal-200'];
-                                $color = $colors[$i % count($colors)];
+                                $numColors = ['bg-blue-100 text-blue-700','bg-indigo-100 text-indigo-700','bg-violet-100 text-violet-700','bg-purple-100 text-purple-700','bg-cyan-100 text-cyan-700','bg-teal-100 text-teal-700'];
+                                $nc = $numColors[$i % count($numColors)];
                             @endphp
-                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border {{ $color }} hover:shadow-sm transition-shadow cursor-default">
-                                <span class="w-1 h-1 rounded-full bg-current opacity-60"></span>
-                                {{ $topic->name }}
-                            </span>
+                            <div class="flex items-start gap-2 group">
+                                <span class="shrink-0 w-5 h-5 rounded-md {{ $nc }} text-[10px] font-extrabold flex items-center justify-center mt-0.5">{{ $i + 1 }}</span>
+                                <span class="text-xs text-gray-700 font-medium leading-snug group-hover:text-indigo-700 transition-colors">{{ $topic->name }}</span>
+                            </div>
                             @endforeach
                         </div>
                     </div>
