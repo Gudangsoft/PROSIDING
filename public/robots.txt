@@ -1,2 +1,12 @@
 User-agent: *
-Disallow:
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /author/
+Disallow: /reviewer/
+Disallow: /storage/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Allow: /

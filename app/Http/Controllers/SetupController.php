@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class SetupController extends Controller
 {
     // Token keamanan - ganti sebelum upload ke server!
-    private const SETUP_TOKEN = 'setup-prosiding;
+    private const SETUP_TOKEN = 'setup-prosiding';
 
     // File penanda bahwa setup sudah selesai
     private function completedFlagPath(): string

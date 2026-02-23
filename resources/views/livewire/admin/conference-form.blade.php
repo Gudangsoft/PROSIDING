@@ -42,7 +42,8 @@
                 'guidelines' => ['label' => 'Panduan', 'count' => null, 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
                 'templates' => ['label' => 'Template Luaran', 'count' => count($deliverableTemplates), 'icon' => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'],
                 'journals' => ['label' => 'Jurnal Publikasi', 'count' => count($journals), 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'],
-                'visibility' => ['label' => 'Tampilkan di Web', 'count' => null, 'icon' => 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'],
+                'email_templates' => ['label' => 'Template Email', 'count' => count($emailTemplates), 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
+                'whatsapp' => ['label' => 'Grup WhatsApp', 'count' => null, 'icon' => 'M12 18h.01M8 21l4-4 4 4M3 9.5A8.5 8.5 0 1112 3a8.5 8.5 0 01-9 6.5'],
             ];
         @endphp
         @foreach($tabConfig as $tab => $cfg)
@@ -575,6 +576,12 @@
                                 <input type="checkbox" wire:model.live="packages.{{ $index }}.is_free" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
                                 <span class="text-xs font-medium text-emerald-700">Gratis</span>
                             </label>
+                            @if(!($pkg['is_free'] ?? false))
+                            <label class="flex items-center gap-1.5 cursor-pointer" title="Tampilkan field upload bukti bayar di form pendaftaran">
+                                <input type="checkbox" wire:model="packages.{{ $index }}.require_payment_proof" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                                <span class="text-xs font-medium text-orange-600">Upload Bukti Bayar</span>
+                            </label>
+                            @endif
                             <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" wire:model="packages.{{ $index }}.is_featured" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 <span class="text-xs text-gray-500">Featured</span>
@@ -978,8 +985,126 @@
     </div>
     @endif
 
-    {{-- TAB: Tampilkan di Web --}}
-    @if($activeTab === 'visibility')
+    {{-- TAB: Template Email --}}
+    @if($activeTab === 'email_templates')
+    <div class="space-y-4">
+        {{-- Info banner --}}
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="text-sm text-blue-700">
+                <p class="font-semibold">Template Email Kustom</p>
+                <p class="mt-0.5">Kustomisasi subjek dan isi email yang dikirim sistem kepada peserta. Jika tidak diisi, sistem akan menggunakan template default. Gunakan variabel yang tersedia untuk konten dinamis.</p>
+            </div>
+        </div>
+
+        @php
+            $emailTypeList = \App\Models\EmailTemplate::TYPES;
+            $colorMap = [
+                'blue'    => ['bg' => 'bg-blue-50',    'border' => 'border-blue-300',  'badge' => 'bg-blue-100 text-blue-700',   'icon' => 'text-blue-500',   'title' => 'text-blue-800'],
+                'green'   => ['bg' => 'bg-green-50',   'border' => 'border-green-300', 'badge' => 'bg-green-100 text-green-700', 'icon' => 'text-green-500',  'title' => 'text-green-800'],
+                'yellow'  => ['bg' => 'bg-yellow-50',  'border' => 'border-yellow-300','badge' => 'bg-yellow-100 text-yellow-700','icon' => 'text-yellow-500', 'title' => 'text-yellow-800'],
+                'indigo'  => ['bg' => 'bg-indigo-50',  'border' => 'border-indigo-300','badge' => 'bg-indigo-100 text-indigo-700','icon' => 'text-indigo-500', 'title' => 'text-indigo-800'],
+                'purple'  => ['bg' => 'bg-purple-50',  'border' => 'border-purple-300','badge' => 'bg-purple-100 text-purple-700','icon' => 'text-purple-500', 'title' => 'text-purple-800'],
+                'emerald' => ['bg' => 'bg-emerald-50', 'border' => 'border-emerald-300','badge' => 'bg-emerald-100 text-emerald-700','icon' => 'text-emerald-500','title' => 'text-emerald-800'],
+                'red'     => ['bg' => 'bg-red-50',     'border' => 'border-red-300',   'badge' => 'bg-red-100 text-red-700',    'icon' => 'text-red-500',    'title' => 'text-red-800'],
+                'orange'  => ['bg' => 'bg-orange-50',  'border' => 'border-orange-300','badge' => 'bg-orange-100 text-orange-700','icon' => 'text-orange-500', 'title' => 'text-orange-800'],
+            ];
+        @endphp
+
+        @foreach($emailTypeList as $typeKey => $typeCfg)
+        @php
+            $color = $typeCfg['color'] ?? 'blue';
+            $cm = $colorMap[$color] ?? $colorMap['blue'];
+            $isCustomized = isset($emailTemplates[$typeKey]) && (
+                !empty($emailTemplates[$typeKey]['subject']) || !empty($emailTemplates[$typeKey]['body'])
+            );
+        @endphp
+        <div class="bg-white rounded-xl shadow-sm border overflow-hidden" wire:key="email-type-{{ $typeKey }}">
+            {{-- Header --}}
+            <div class="flex items-center gap-3 px-5 py-4 {{ $cm['bg'] }} border-b {{ $cm['border'] }}">
+                <div class="w-9 h-9 rounded-lg {{ $cm['bg'] }} border {{ $cm['border'] }} flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 {{ $cm['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $typeCfg['icon'] }}"/>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <h4 class="font-semibold text-gray-800 text-sm">{{ $typeCfg['label'] }}</h4>
+                        @if($isCustomized)
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $cm['badge'] }}">Dikustomisasi</span>
+                        @else
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Default</span>
+                        @endif
+                    </div>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ $typeCfg['desc'] }}</p>
+                </div>
+                @if($isCustomized)
+                <button type="button"
+                    wire:click="resetEmailTemplate('{{ $typeKey }}')"
+                    wire:confirm="Reset template ini ke default? Kustomisasi Anda akan dihapus."
+                    class="shrink-0 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Default
+                </button>
+                @endif
+            </div>
+
+            {{-- Fields --}}
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                        Subjek Email
+                        <span class="text-gray-400 font-normal ml-1">— kosongkan untuk menggunakan default</span>
+                    </label>
+                    <input type="text"
+                        wire:model="emailTemplates.{{ $typeKey }}.subject"
+                        placeholder="{{ $typeCfg['default_subject'] }}"
+                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 {{ $isCustomized && !empty($emailTemplates[$typeKey]['subject']) ? 'bg-white' : 'bg-gray-50' }}">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                        Isi Email (HTML diperbolehkan)
+                        <span class="text-gray-400 font-normal ml-1">— kosongkan untuk menggunakan default</span>
+                    </label>
+                    <textarea
+                        wire:model="emailTemplates.{{ $typeKey }}.body"
+                        rows="6"
+                        placeholder="Tulis isi email di sini... HTML diperbolehkan untuk format teks (bold, link, dll)."
+                        class="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 {{ $isCustomized && !empty($emailTemplates[$typeKey]['body']) ? 'bg-white' : 'bg-gray-50' }}"></textarea>
+                </div>
+
+                {{-- Variables --}}
+                <div>
+                    <p class="text-xs font-medium text-gray-500 mb-2">Variabel yang tersedia:</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        @foreach($typeCfg['vars'] as $var)
+                        <code class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-mono border border-gray-200 cursor-pointer hover:bg-gray-200 transition"
+                            title="Klik untuk menyalin"
+                            onclick="navigator.clipboard.writeText('{{ $var }}')">{{ $var }}</code>
+                        @endforeach
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1.5">Klik variabel untuk menyalin. Variabel akan diganti otomatis saat email dikirim.</p>
+                </div>
+
+                {{-- Active toggle --}}
+                <div class="flex items-center gap-2 pt-1">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox"
+                            wire:model="emailTemplates.{{ $typeKey }}.is_active"
+                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm text-gray-600">Aktifkan template ini</span>
+                    </label>
+                    <span class="text-xs text-gray-400">(jika tidak aktif, sistem akan menggunakan template default)</span>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
+    {{-- TAB: Tampilkan di Web (removed - handled in Pengaturan Tema) --}}
+    @if(false)
     <div class="bg-white rounded-xl shadow-sm border p-6">
         <div class="mb-6">
             <h3 class="text-lg font-semibold text-gray-800">Tampilkan di Web</h3>
@@ -1057,6 +1182,101 @@
     </div>
     @endif
 
+    {{-- TAB: Grup WhatsApp --}}
+    @if($activeTab === 'whatsapp')
+    <div class="bg-white rounded-xl shadow-sm border p-6">
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800">Link Grup WhatsApp</h3>
+            <p class="text-sm text-gray-500 mt-1">Masukkan link undangan grup WhatsApp untuk setiap kategori peserta. Link akan dikirim otomatis melalui email saat pembayaran diverifikasi.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {{-- Pemakalah --}}
+            <div class="p-5 rounded-xl border-2 border-green-200 bg-green-50">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-green-800 text-sm">Peserta Pemakalah</p>
+                        <p class="text-xs text-green-600">Peserta yang submit paper</p>
+                    </div>
+                </div>
+                <input type="url"
+                    wire:model.defer="wa_group_pemakalah"
+                    placeholder="https://chat.whatsapp.com/..."
+                    class="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-400 focus:border-transparent bg-white">
+                @error('wa_group_pemakalah') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Non-Pemakalah --}}
+            <div class="p-5 rounded-xl border-2 border-blue-200 bg-blue-50">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-blue-800 text-sm">Peserta Non-Pemakalah</p>
+                        <p class="text-xs text-blue-600">Peserta registrasi tanpa paper</p>
+                    </div>
+                </div>
+                <input type="url"
+                    wire:model.defer="wa_group_non_pemakalah"
+                    placeholder="https://chat.whatsapp.com/..."
+                    class="w-full border border-blue-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white">
+                @error('wa_group_non_pemakalah') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Reviewer --}}
+            <div class="p-5 rounded-xl border-2 border-purple-200 bg-purple-50">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-purple-800 text-sm">Reviewer</p>
+                        <p class="text-xs text-purple-600">Tim reviewer paper</p>
+                    </div>
+                </div>
+                <input type="url"
+                    wire:model.defer="wa_group_reviewer"
+                    placeholder="https://chat.whatsapp.com/..."
+                    class="w-full border border-purple-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-400 focus:border-transparent bg-white">
+                @error('wa_group_reviewer') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Editor --}}
+            <div class="p-5 rounded-xl border-2 border-orange-200 bg-orange-50">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-orange-800 text-sm">Editor / Admin</p>
+                        <p class="text-xs text-orange-600">Tim editor & panitia</p>
+                    </div>
+                </div>
+                <input type="url"
+                    wire:model.defer="wa_group_editor"
+                    placeholder="https://chat.whatsapp.com/..."
+                    class="w-full border border-orange-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white">
+                @error('wa_group_editor') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3">
+            <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="text-sm text-green-700">
+                <p class="font-semibold">Cara Mendapatkan Link Grup WhatsApp</p>
+                <p class="mt-0.5">Buka grup WhatsApp → Klik nama grup → <em>Invite to Group via Link</em> → Copy link. Link biasanya berformat <code class="bg-white px-1 rounded text-xs">https://chat.whatsapp.com/xxxxx</code></p>
+                <p class="mt-1">Link ini akan dikirim otomatis ke email peserta ketika pembayaran mereka diverifikasi (Lunas).</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Save Button --}}
     <div class="mt-6 flex justify-between items-center">
         <a href="{{ route('admin.conferences') }}" class="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50 inline-flex items-center gap-2">
@@ -1067,7 +1287,7 @@
             {{-- Tab navigation hints --}}
             <div class="hidden sm:flex items-center gap-1 text-xs text-gray-400">
                 @php
-                    $tabs = ['general', 'dates', 'committees', 'topics', 'speakers', 'pricing', 'reviewers', 'guidelines', 'templates', 'journals', 'visibility'];
+                    $tabs = ['general', 'dates', 'committees', 'topics', 'speakers', 'pricing', 'reviewers', 'guidelines', 'templates', 'journals', 'email_templates', 'whatsapp'];
                     $currentIdx = array_search($activeTab, $tabs);
                 @endphp
                 @if($currentIdx > 0)

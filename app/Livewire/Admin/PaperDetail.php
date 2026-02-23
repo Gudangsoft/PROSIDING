@@ -550,7 +550,8 @@ class PaperDetail extends Component
                     $this->paper->title,
                     $payment->invoice_number,
                     $payment->amount,
-                    route('author.paper.payment', $this->paper)
+                    route('author.paper.payment', $this->paper),
+                    $this->paper->conference_id
                 )
             );
         } catch (\Exception $e) {
@@ -584,13 +585,17 @@ class PaperDetail extends Component
 
             // Kirim email notifikasi ke author
             try {
+                $conference = $this->paper->conference_id ? \App\Models\Conference::find($this->paper->conference_id) : null;
+                $waGroupLink = $conference?->wa_group_pemakalah;
                 Mail::to($this->paper->user->email)->send(new PaymentVerifiedMail(
                     $this->paper->user->name,
                     $payment->invoice_number,
                     $payment->amount,
                     'paper',
                     $this->paper->title,
-                    route('author.paper.detail', $this->paper)
+                    route('author.paper.detail', $this->paper),
+                    $this->paper->conference_id,
+                    $waGroupLink
                 ));
             } catch (\Exception $e) {
                 \Log::error('PaymentVerifiedMail gagal: ' . $e->getMessage());

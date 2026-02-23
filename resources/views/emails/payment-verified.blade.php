@@ -80,6 +80,20 @@
                 <a href="{{ $dashboardUrl }}" class="button">Buka Dashboard Saya</a>
             </div>
 
+            @if(!empty($waGroupLink))
+            <div style="margin: 24px 0; background: #f0fff4; border: 2px solid #9ae6b4; border-radius: 12px; padding: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <span style="font-size: 24px;">📱</span>
+                    <h3 style="margin: 0; color: #276749; font-size: 16px;">Bergabung ke Grup WhatsApp</h3>
+                </div>
+                <p style="margin: 0 0 12px; font-size: 14px; color: #2f855a;">Anda diundang bergabung ke grup WhatsApp peserta. Klik tombol di bawah untuk bergabung:</p>
+                <div style="text-align: center;">
+                    <a href="{{ $waGroupLink }}" style="display: inline-block; background: linear-gradient(135deg, #25d366 0%, #128c7e 100%); color: white; text-decoration: none; padding: 12px 30px; border-radius: 25px; font-weight: 600; font-size: 15px;">💬 Gabung Grup WhatsApp</a>
+                </div>
+                <p style="margin: 12px 0 0; font-size: 12px; color: #68d391; text-align: center;">Atau salin link: <span style="font-family: monospace; background: white; padding: 2px 6px; border-radius: 4px;">{{ $waGroupLink }}</span></p>
+            </div>
+            @endif
+
             <p style="margin-top: 30px; font-size: 13px; color: #6c757d;">
                 Jika Anda belum login, silakan <a href="{{ $loginUrl }}" style="color: #38a169;">klik di sini untuk login</a>.
             </p>

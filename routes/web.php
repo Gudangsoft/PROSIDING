@@ -27,6 +27,7 @@ use App\Livewire\Admin\SupporterManager;
 use App\Livewire\Admin\UsersRoles;
 use App\Livewire\Admin\PageList;
 use App\Livewire\Admin\PageForm;
+use App\Livewire\Admin\EmailTemplateManager;
 use App\Livewire\Reviewer\ReviewList;
 use App\Livewire\Reviewer\ReviewForm;
 use App\Livewire\Author\Helpdesk;
@@ -177,6 +178,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Users & Roles
         Route::get('/users-roles', UsersRoles::class)->name('admin.users-roles');
+
+        // Email Templates
+        Route::get('/email-templates', EmailTemplateManager::class)->name('admin.email-templates');
 
         // Settings
         Route::get('/settings/general', GeneralSettings::class)->name('admin.settings.general');

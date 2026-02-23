@@ -19,6 +19,7 @@ class Conference extends Model
         'status', 'conference_type', 'is_active', 'created_by',
         'loa_generation_mode', 'certificate_generation_mode',
         'visible_sections', 'hidden_speaker_types',
+        'wa_group_pemakalah', 'wa_group_non_pemakalah', 'wa_group_reviewer', 'wa_group_editor',
     ];
 
     protected $casts = [
@@ -218,6 +219,11 @@ class Conference extends Model
     public function journalPublications(): HasMany
     {
         return $this->hasMany(JournalPublication::class)->orderBy('sort_order');
+    }
+
+    public function emailTemplates(): HasMany
+    {
+        return $this->hasMany(EmailTemplate::class);
     }
 
     public function scopeActive($query)

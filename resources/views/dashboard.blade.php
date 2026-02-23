@@ -1,35 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - ' . \App\Models\Setting::getValue('site_name', config('app.name')))
+@section('title', 'Dashboard - Prosiding LPKD-APJI')
 
 @section('content')
 <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+        <p class="text-gray-500 mt-1">Selamat datang, {{ Auth::user()->name }}! <span class="text-xs">({{ ucfirst(Auth::user()->role) }})</span></p>
+    </div>
+
     @php
         $user = Auth::user();
     @endphp
-
-    <!-- Header -->
-    @if(!$user->isParticipant())
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <p class="text-gray-500 mt-1">Selamat datang, {{ $user->name }}! <span class="text-xs">({{ ucfirst($user->role) }})</span></p>
-    </div>
-    @endif
-
-    {{-- ============ PARTICIPANT WELCOME CARD (top position) ============ --}}
-    @if($user->isParticipant())
-    <div class="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl shadow-sm p-6 mb-8 text-white">
-        <div class="flex items-center gap-4">
-            <div class="bg-white/20 p-3 rounded-lg">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold">Selamat datang, {{ $user->name }}!</h2>
-                <p class="text-teal-100 text-sm mt-1">Anda terdaftar sebagai <strong>Partisipan</strong>. Ikuti perkembangan kegiatan prosiding melalui dashboard ini.</p>
-            </div>
-        </div>
-    </div>
-    @endif
 
     {{-- ============ ACTIVE ANNOUNCEMENTS (ALL ROLES) ============ --}}
     @php
@@ -66,11 +49,11 @@
     </div>
     @endif
 
-    {{-- ============ ACTIVE CONFERENCE INFO (non-participant roles) ============ --}}
+    {{-- ============ ACTIVE CONFERENCE INFO (ALL ROLES) ============ --}}
     @php
         $activeConference = \App\Models\Conference::active()->first();
     @endphp
-    @if($activeConference && !$user->isParticipant())
+    @if($activeConference)
     <div class="bg-white rounded-xl shadow-sm border p-6 mb-8">
         <div class="flex items-start justify-between mb-4">
             <div>
@@ -93,12 +76,6 @@
                     {{ $activeConference->venue_display }}
                 </span>
             </div>
-            @if(($activeConference->venue_type === 'online' || $activeConference->venue_type === 'hybrid') && $activeConference->online_url)
-            <div class="flex items-center gap-2 text-gray-600">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.259a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
-                <a href="{{ $activeConference->online_url }}" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 font-medium text-sm underline underline-offset-2">🔗 Link Meeting Online</a>
-            </div>
-            @endif
             @if($activeConference->organizer)
             <div class="flex items-center gap-2 text-gray-600">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
@@ -415,124 +392,6 @@
         </div>
     </div>
 
-    {{-- Quick Announcement Input --}}
-    <div class="bg-white rounded-xl shadow-sm border p-6 mb-6" x-data="{
-        showForm: false,
-        formData: { title: '', content: '', type: 'info', priority: 'normal', audience: 'all', status: 'published' },
-        saving: false,
-        message: '',
-        async submit() {
-            this.saving = true;
-            this.message = '';
-            try {
-                const response = await fetch('{{ route('admin.announcements.quick-create') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(this.formData)
-                });
-                const data = await response.json();
-                if (data.success) {
-                    this.message = 'Pengumuman berhasil dipublikasikan!';
-                    this.formData = { title: '', content: '', type: 'info', priority: 'normal', audience: 'all', status: 'published' };
-                    this.showForm = false;
-                    setTimeout(() => { this.message = ''; window.location.reload(); }, 1500);
-                } else {
-                    this.message = data.error || 'Gagal menyimpan pengumuman.';
-                }
-            } catch (e) {
-                this.message = 'Terjadi kesalahan.';
-            }
-            this.saving = false;
-        }
-    }">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-gray-800">
-                <svg class="w-5 h-5 inline-block mr-1 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-                Input Pengumuman Cepat
-            </h2>
-            <button @click="showForm = !showForm" class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition"
-                    :class="showForm ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-amber-600 text-white hover:bg-amber-700'">
-                <template x-if="!showForm">
-                    <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg> Buat Pengumuman</span>
-                </template>
-                <template x-if="showForm">
-                    <span>Batal</span>
-                </template>
-            </button>
-        </div>
-
-        {{-- Success/Error Message --}}
-        <template x-if="message">
-            <div class="mb-4 bg-green-50 border-l-4 border-green-500 p-3 rounded-r-lg">
-                <p class="text-sm text-green-700" x-text="message"></p>
-            </div>
-        </template>
-
-        {{-- Quick Form --}}
-        <div x-show="showForm" x-transition class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Judul Pengumuman <span class="text-red-500">*</span></label>
-                <input type="text" x-model="formData.title" class="w-full border-gray-300 rounded-lg shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500" placeholder="Masukkan judul pengumuman...">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Isi Pengumuman <span class="text-red-500">*</span></label>
-                <textarea x-model="formData.content" rows="3" class="w-full border-gray-300 rounded-lg shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500" placeholder="Tulis isi pengumuman..."></textarea>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Tipe</label>
-                    <select x-model="formData.type" class="w-full border-gray-300 rounded-lg shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
-                        <option value="info">Info</option>
-                        <option value="warning">Warning</option>
-                        <option value="success">Success</option>
-                        <option value="danger">Danger</option>
-                        <option value="deadline">Deadline</option>
-                        <option value="result">Result</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Prioritas</label>
-                    <select x-model="formData.priority" class="w-full border-gray-300 rounded-lg shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
-                        <option value="low">Low</option>
-                        <option value="normal">Normal</option>
-                        <option value="high">High</option>
-                        <option value="urgent">Urgent</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Target Audience</label>
-                    <select x-model="formData.audience" class="w-full border-gray-300 rounded-lg shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
-                        <option value="all">Semua</option>
-                        <option value="author">Author</option>
-                        <option value="reviewer">Reviewer</option>
-                        <option value="editor">Editor</option>
-                        <option value="admin">Admin</option>
-                        <option value="participant">Partisipan</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
-                    <select x-model="formData.status" class="w-full border-gray-300 rounded-lg shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
-                        <option value="published">Langsung Publish</option>
-                        <option value="draft">Simpan Draft</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex justify-end">
-                <button @click="submit()" :disabled="saving || !formData.title || !formData.content"
-                        class="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                    <svg x-show="saving" class="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                    <svg x-show="!saving" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                    <span x-text="saving ? 'Menyimpan...' : 'Publikasikan'"></span>
-                </button>
-            </div>
-        </div>
-    </div>
-
     {{-- Latest News & Announcements --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {{-- Latest News --}}
@@ -578,12 +437,9 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-sm font-medium text-gray-800">{{ Str::limit($ann->title, 40) }}</p>
-                            <div class="flex items-center gap-2 mt-1 flex-wrap">
+                            <div class="flex items-center gap-2 mt-1">
                                 <span class="text-xs px-1.5 py-0.5 rounded bg-{{ \App\Models\Announcement::TYPE_COLORS[$ann->type] ?? 'gray' }}-100 text-{{ \App\Models\Announcement::TYPE_COLORS[$ann->type] ?? 'gray' }}-700">{{ $ann->type_label }}</span>
-                                <span class="text-xs text-gray-400">Untuk:</span>
-                                @foreach($ann->audience ?? ['all'] as $aud)
-                                    <span class="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">{{ ucfirst($aud) }}</span>
-                                @endforeach
+                                <span class="text-xs text-gray-400">Untuk: {{ implode(', ', array_map('ucfirst', (array) $ann->audience)) }}</span>
                             </div>
                         </div>
                         <span class="text-xs px-1.5 py-0.5 rounded {{ $ann->status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' }}">{{ ucfirst($ann->status) }}</span>
@@ -596,146 +452,6 @@
             @endif
         </div>
     </div>
-    @endif
-
-    {{-- ============ PARTICIPANT DASHBOARD ============ --}}
-    @if($user->isParticipant())
-    @php
-        $activeConferenceParticipant = \App\Models\Conference::active()->first();
-    @endphp
-
-    {{-- Active Conference Info --}}
-    @if($activeConferenceParticipant)
-    <div class="bg-white rounded-xl shadow-sm border p-6 mb-8">
-        <div class="flex items-start justify-between mb-4">
-            <div>
-                <h2 class="text-lg font-semibold text-gray-800">{{ $activeConferenceParticipant->name }}</h2>
-                @if($activeConferenceParticipant->theme)<p class="text-sm text-gray-500 mt-1">{{ $activeConferenceParticipant->theme }}</p>@endif
-            </div>
-            @if($activeConferenceParticipant->acronym)<span class="bg-teal-100 text-teal-700 text-xs font-bold px-2 py-1 rounded">{{ $activeConferenceParticipant->acronym }}</span>@endif
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            @if($activeConferenceParticipant->start_date)
-            <div class="flex items-center gap-2 text-gray-600">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                {{ $activeConferenceParticipant->date_range }}
-            </div>
-            @endif
-            <div class="flex items-center gap-2 text-gray-600">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ \App\Models\Conference::VENUE_TYPE_ICONS[$activeConferenceParticipant->venue_type ?? 'offline'] ?? '' }}"/></svg>
-                <span class="inline-flex items-center gap-1.5">
-                    <span class="px-1.5 py-0.5 rounded text-xs font-medium {{ \App\Models\Conference::VENUE_TYPE_COLORS[$activeConferenceParticipant->venue_type ?? 'offline'] ?? '' }}">{{ $activeConferenceParticipant->venue_type_label }}</span>
-                    {{ $activeConferenceParticipant->venue_display }}
-                </span>
-            </div>
-            @if(($activeConferenceParticipant->venue_type === 'online' || $activeConferenceParticipant->venue_type === 'hybrid') && $activeConferenceParticipant->online_url)
-            <div class="flex items-center gap-2 text-gray-600">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.259a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
-                <a href="{{ $activeConferenceParticipant->online_url }}" target="_blank" rel="noopener" class="text-teal-600 hover:text-teal-800 font-medium text-sm underline underline-offset-2">🔗 Link Meeting Online</a>
-            </div>
-            @endif
-            @if($activeConferenceParticipant->organizer)
-            <div class="flex items-center gap-2 text-gray-600">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                {{ $activeConferenceParticipant->organizer }}
-            </div>
-            @endif
-        </div>
-        @php $importantDatesP = $activeConferenceParticipant->importantDates()->orderBy('date')->get(); @endphp
-        @if($importantDatesP->count())
-        <div class="mt-5 pt-4 border-t">
-            <h3 class="text-sm font-semibold text-gray-700 mb-3">Tanggal Penting</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                @foreach($importantDatesP as $d)
-                <div class="flex items-center gap-2 text-sm {{ $d->is_past ? 'text-gray-400 line-through' : 'text-gray-700' }}">
-                    <span class="w-2 h-2 rounded-full {{ $d->is_past ? 'bg-gray-300' : 'bg-teal-500' }} shrink-0"></span>
-                    <span class="font-medium">{{ $d->date->format('d M Y') }}</span>
-                    <span class="text-gray-500">— {{ $d->title }}</span>
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
-    </div>
-    @endif
-
-    {{-- Quick Actions for Participant --}}
-    <div class="bg-white rounded-xl shadow-sm p-6 border mb-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <a href="{{ route('helpdesk') }}" class="flex items-center p-4 bg-teal-50 rounded-lg hover:bg-teal-100 transition">
-                <svg class="w-8 h-8 text-teal-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                <div><p class="font-medium text-gray-800">Helpdesk</p><p class="text-sm text-gray-500">Kirim pertanyaan atau laporan masalah</p></div>
-            </a>
-            <a href="{{ url('/publikasi') }}" class="flex items-center p-4 bg-cyan-50 rounded-lg hover:bg-cyan-100 transition">
-                <svg class="w-8 h-8 text-cyan-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                <div><p class="font-medium text-gray-800">Publikasi</p><p class="text-sm text-gray-500">Lihat paper yang dipublikasikan</p></div>
-            </a>
-        </div>
-    </div>
-
-    {{-- Published Announcements for Participant --}}
-    @php
-        $participantAnnouncements = \App\Models\Announcement::published()
-            ->forAudience('participant')
-            ->orderByDesc('is_pinned')
-            ->orderByDesc('priority')
-            ->latest('published_at')
-            ->take(10)->get();
-    @endphp
-    @if($participantAnnouncements->count())
-    <div class="bg-white rounded-xl shadow-sm border overflow-hidden mb-6">
-        <div class="px-6 py-4 border-b">
-            <h3 class="font-semibold text-gray-800">Semua Pengumuman</h3>
-        </div>
-        <div class="divide-y">
-            @foreach($participantAnnouncements as $ann)
-            @php
-                $colors = ['info'=>'blue','warning'=>'yellow','success'=>'green','danger'=>'red','deadline'=>'orange','result'=>'purple'];
-                $c = $colors[$ann->type] ?? 'gray';
-            @endphp
-            <div class="px-6 py-4 hover:bg-gray-50">
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            @if($ann->is_pinned)
-                            <svg class="w-4 h-4 text-{{ $c }}-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v2h2a1 1 0 010 2h-1l-1 9a2 2 0 01-2 2H7a2 2 0 01-2-2L4 9H3a1 1 0 110-2h2V5z"/></svg>
-                            @endif
-                            <h4 class="text-sm font-semibold text-gray-800">{{ $ann->title }}</h4>
-                            <span class="text-xs px-1.5 py-0.5 rounded bg-{{ $c }}-100 text-{{ $c }}-700">{{ $ann->type_label }}</span>
-                        </div>
-                        <p class="text-sm text-gray-600 mt-1">{{ Str::limit(strip_tags($ann->content), 200) }}</p>
-                    </div>
-                    <span class="text-xs text-gray-400 whitespace-nowrap ml-4">{{ $ann->published_at?->diffForHumans() }}</span>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
-
-    {{-- Latest News for Participant --}}
-    @php $participantNews = \App\Models\News::published()->latest('published_at')->take(5)->get(); @endphp
-    @if($participantNews->count())
-    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-        <div class="px-6 py-4 border-b">
-            <h3 class="font-semibold text-gray-800">Berita Terbaru</h3>
-        </div>
-        <div class="divide-y">
-            @foreach($participantNews as $n)
-            <div class="px-6 py-3 hover:bg-gray-50">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">{{ $n->title }}</p>
-                        <p class="text-xs text-gray-500 mt-1">{{ Str::limit(strip_tags($n->content ?? ''), 100) }}</p>
-                        <span class="text-xs text-gray-400">{{ $n->published_at?->diffForHumans() }}</span>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
     @endif
 </div>
 @endsection

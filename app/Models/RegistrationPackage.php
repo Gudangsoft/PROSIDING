@@ -10,7 +10,7 @@ class RegistrationPackage extends Model
     protected $fillable = [
         'conference_id', 'name', 'price', 'currency',
         'description', 'features', 'is_featured', 'is_free',
-        'is_active', 'sort_order',
+        'require_payment_proof', 'is_active', 'sort_order',
     ];
 
     protected $casts = [
@@ -18,6 +18,7 @@ class RegistrationPackage extends Model
         'features' => 'array',
         'is_featured' => 'boolean',
         'is_free' => 'boolean',
+        'require_payment_proof' => 'boolean',
         'is_active' => 'boolean',
     ];
 

@@ -10,6 +10,7 @@ use App\Models\KeynoteSpeaker;
 use App\Models\RegistrationPackage;
 use App\Models\SubmissionGuideline;
 use App\Models\DeliverableTemplate;
+use App\Models\EmailTemplate;
 use App\Models\JournalPublication;
 use App\Models\User;
 use Livewire\Component;
@@ -86,6 +87,15 @@ class ConferenceForm extends Component
     // Journal publications
     public array $journals = [];
     public array $journalLogos = []; // temp file uploads keyed by journal index
+
+    // Email templates (keyed by template key)
+    public array $emailTemplates = [];
+
+    // WhatsApp group links
+    public string $wa_group_pemakalah = '';
+    public string $wa_group_non_pemakalah = '';
+    public string $wa_group_reviewer = '';
+    public string $wa_group_editor = '';
 
     // Active tab
     public string $activeTab = 'general';
@@ -181,6 +191,17 @@ class ConferenceForm extends Component
                 'is_active' => $j->is_active,
             ])->toArray();
 
+            // Load email templates (keyed by template key)
+            $this->emailTemplates = $conference->emailTemplates->mapWithKeys(fn($t) => [
+                $t->key => [
+                    'id'        => $t->id,
+                    'key'       => $t->key,
+                    'subject'   => $t->subject,
+                    'body'      => $t->body,
+                    'is_active' => $t->is_active,
+                ]
+            ])->toArray();
+
             // Load payment info
             $this->payment_bank_name = $conference->payment_bank_name ?? '';
             $this->payment_bank_account = $conference->payment_bank_account ?? '';
@@ -207,6 +228,12 @@ class ConferenceForm extends Component
                 $this->hiddenSpeakerTypes = $conference->hidden_speaker_types ?? [];
             }
 
+            // Load WhatsApp group links
+            $this->wa_group_pemakalah     = $conference->wa_group_pemakalah ?? '';
+            $this->wa_group_non_pemakalah = $conference->wa_group_non_pemakalah ?? '';
+            $this->wa_group_reviewer      = $conference->wa_group_reviewer ?? '';
+            $this->wa_group_editor        = $conference->wa_group_editor ?? '';
+
             // Load registration packages
             $this->packages = $conference->registrationPackages->map(fn($p) => [
                 'id' => $p->id,
@@ -216,6 +243,7 @@ class ConferenceForm extends Component
                 'features' => implode("\n", $p->features ?? []),
                 'is_featured' => $p->is_featured,
                 'is_free' => $p->is_free,
+                'require_payment_proof' => $p->require_payment_proof,
                 'is_active' => $p->is_active,
             ])->toArray();
         }
@@ -377,7 +405,7 @@ class ConferenceForm extends Component
     // -- Registration Packages --
     public function addPackage()
     {
-        $this->packages[] = ['id' => null, 'name' => '', 'price' => 0, 'description' => '', 'features' => '', 'is_featured' => false, 'is_free' => false, 'is_active' => true];
+        $this->packages[] = ['id' => null, 'name' => '', 'price' => 0, 'description' => '', 'features' => '', 'is_featured' => false, 'is_free' => false, 'require_payment_proof' => false, 'is_active' => true];
     }
 
     // -- Deliverable templates --
@@ -483,6 +511,16 @@ class ConferenceForm extends Component
         $this->reviewers = array_values($this->reviewers);
     }
 
+    // -- Email Templates --
+    public function resetEmailTemplate(string $key): void
+    {
+        // Remove customized template (falls back to hardcoded default)
+        if (!empty($this->emailTemplates[$key]['id'])) {
+            EmailTemplate::find($this->emailTemplates[$key]['id'])?->delete();
+        }
+        unset($this->emailTemplates[$key]);
+    }
+
     public function save()
     {
         $this->validate([
@@ -505,6 +543,10 @@ class ConferenceForm extends Component
             'logo' => 'nullable|image|max:1024',
             'brochure' => 'nullable|image|max:5120',
             'template_file' => 'nullable|file|max:5120',
+            'wa_group_pemakalah' => 'nullable|url|max:500',
+            'wa_group_non_pemakalah' => 'nullable|url|max:500',
+            'wa_group_reviewer' => 'nullable|url|max:500',
+            'wa_group_editor' => 'nullable|url|max:500',
             'speakerPhotos.*' => 'nullable|image|max:1024',
             'templateFiles.*' => 'nullable|file|max:10240',
         ], [
@@ -518,6 +560,10 @@ class ConferenceForm extends Component
             'speakerPhotos.*.max' => 'Foto speaker maksimal 1MB.',
             'speakerPhotos.*.image' => 'Foto speaker harus berupa gambar.',
             'templateFiles.*.max' => 'File template maksimal 10MB.',
+            'wa_group_pemakalah.url' => 'Link grup WA Pemakalah harus berupa URL yang valid.',
+            'wa_group_non_pemakalah.url' => 'Link grup WA Non-Pemakalah harus berupa URL yang valid.',
+            'wa_group_reviewer.url' => 'Link grup WA Reviewer harus berupa URL yang valid.',
+            'wa_group_editor.url' => 'Link grup WA Editor harus berupa URL yang valid.',
         ]);
 
         $data = [
@@ -554,6 +600,14 @@ class ConferenceForm extends Component
         // Only include hidden_speaker_types if the column exists
         if (\Illuminate\Support\Facades\Schema::hasColumn('conferences', 'hidden_speaker_types')) {
             $data['hidden_speaker_types'] = !empty($this->hiddenSpeakerTypes) ? array_values($this->hiddenSpeakerTypes) : null;
+        }
+
+        // WhatsApp group links
+        if (\Illuminate\Support\Facades\Schema::hasColumn('conferences', 'wa_group_pemakalah')) {
+            $data['wa_group_pemakalah']     = $this->wa_group_pemakalah ?: null;
+            $data['wa_group_non_pemakalah'] = $this->wa_group_non_pemakalah ?: null;
+            $data['wa_group_reviewer']      = $this->wa_group_reviewer ?: null;
+            $data['wa_group_editor']        = $this->wa_group_editor ?: null;
         }
 
         if ($this->cover_image) {
@@ -775,6 +829,7 @@ class ConferenceForm extends Component
                 'features' => array_values($featuresArray),
                 'is_featured' => (bool) ($pkg['is_featured'] ?? false),
                 'is_free' => (bool) ($pkg['is_free'] ?? false),
+                'require_payment_proof' => (bool) ($pkg['require_payment_proof'] ?? false),
                 'is_active' => (bool) ($pkg['is_active'] ?? true),
                 'sort_order' => $i,
             ];
@@ -912,6 +967,19 @@ class ConferenceForm extends Component
             } else {
                 JournalPublication::create($journalData);
             }
+        }
+
+        // Save email templates
+        foreach ($this->emailTemplates as $key => $tpl) {
+            if (empty(trim($tpl['subject'] ?? '')) && empty(trim($tpl['body'] ?? ''))) continue;
+            EmailTemplate::updateOrCreate(
+                ['conference_id' => $conference->id, 'key' => $key],
+                [
+                    'subject'   => $tpl['subject'] ?? '',
+                    'body'      => $tpl['body'] ?? '',
+                    'is_active' => (bool) ($tpl['is_active'] ?? true),
+                ]
+            );
         }
 
         session()->flash('success', $this->isEdit ? 'Kegiatan berhasil diperbarui.' : 'Kegiatan berhasil dibuat.');

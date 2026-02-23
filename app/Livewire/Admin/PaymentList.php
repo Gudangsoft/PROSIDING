@@ -41,7 +41,8 @@ class PaymentList extends Component
                 $payment->user->name,
                 $payment->invoice_number,
                 $payment->amount,
-                $paymentUrl
+                $paymentUrl,
+                $payment->registrationPackage?->conference_id ?? $payment->paper?->conference_id
             ));
 
             \App\Models\Notification::createForUser(
@@ -93,13 +94,23 @@ class PaymentList extends Component
 
         // Kirim email notifikasi ke user
         try {
+            $conferenceId = $payment->registrationPackage?->conference_id ?? $payment->paper?->conference_id;
+            $conference = $conferenceId ? \App\Models\Conference::find($conferenceId) : null;
+            $waGroupLink = null;
+            if ($conference) {
+                $waGroupLink = $payment->type === 'paper'
+                    ? $conference->wa_group_pemakalah
+                    : $conference->wa_group_non_pemakalah;
+            }
             Mail::to($payment->user->email)->send(new PaymentVerifiedMail(
                 $payment->user->name,
                 $payment->invoice_number,
                 $payment->amount,
                 $payment->type,
                 $payment->paper?->title,
-                $actionUrl
+                $actionUrl,
+                $conferenceId,
+                $waGroupLink
             ));
         } catch (\Exception $e) {
             \Log::error('PaymentVerifiedMail gagal: ' . $e->getMessage());
