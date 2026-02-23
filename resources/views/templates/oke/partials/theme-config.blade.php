@@ -5,7 +5,7 @@
 --}}
 <script>
 (function() {
-    if (!tailwind.config) tailwind.config = {};
+    if (typeof tailwind === 'undefined') return; if (!tailwind.config) tailwind.config = {};
     if (!tailwind.config.theme) tailwind.config.theme = {};
     if (!tailwind.config.theme.extend) tailwind.config.theme.extend = {};
     if (!tailwind.config.theme.extend.colors) tailwind.config.theme.extend.colors = {};

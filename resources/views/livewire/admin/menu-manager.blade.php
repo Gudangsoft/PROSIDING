@@ -46,6 +46,59 @@
                 </div>
 
                 <div class="p-4">
+                    {{-- Default Menu Items Section --}}
+                    @if(count($this->defaultMenus))
+                    <div class="mb-4">
+                        <div class="flex items-center gap-2 mb-3 px-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Menu Bawaan</h3>
+                        </div>
+                        <div class="space-y-0.5">
+                            @foreach($this->defaultMenus as $defaultItem)
+                            <div class="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 transition {{ !($defaultMenuVisibility[$defaultItem['key']] ?? true) ? 'opacity-50' : '' }}">
+                                {{-- Icon --}}
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                </div>
+
+                                {{-- Title & URL --}}
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium text-gray-800 truncate">{{ $defaultItem['label'] }}</span>
+                                        <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-semibold rounded">BAWAAN</span>
+                                        @if(!($defaultMenuVisibility[$defaultItem['key']] ?? true))
+                                        <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-semibold rounded">TERSEMBUNYI</span>
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-xs text-gray-400 truncate font-mono">{{ $defaultItem['url'] }}</p>
+                                        @if($defaultItem['conditional'])
+                                        <span class="text-[10px] text-amber-500 italic truncate">{{ $defaultItem['conditional'] }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                {{-- Toggle visibility --}}
+                                <div class="flex items-center shrink-0">
+                                    <button wire:click="toggleDefaultMenu('{{ $defaultItem['key'] }}')" 
+                                        title="{{ ($defaultMenuVisibility[$defaultItem['key']] ?? true) ? 'Sembunyikan' : 'Tampilkan' }}"
+                                        class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors {{ ($defaultMenuVisibility[$defaultItem['key']] ?? true) ? 'bg-green-500' : 'bg-gray-300' }}">
+                                        <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow-sm {{ ($defaultMenuVisibility[$defaultItem['key']] ?? true) ? 'translate-x-4' : 'translate-x-0.5' }}"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Divider between default and custom --}}
+                    <div class="flex items-center gap-2 mb-3 mt-4 px-2">
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                        <span class="text-xs text-gray-400 uppercase tracking-wider font-medium">Menu Kustom</span>
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                    </div>
+                    @endif
+
                     @if($this->menuTree->count())
                         @foreach($this->menuTree as $menu)
                             @include('livewire.admin.partials.menu-item', ['menu' => $menu, 'depth' => 0])

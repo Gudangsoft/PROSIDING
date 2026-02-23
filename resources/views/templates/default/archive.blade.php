@@ -7,7 +7,6 @@
     <meta name="description" content="Arsip kegiatan prosiding yang telah dilaksanakan">
     <script src="https://cdn.tailwindcss.com"></script>
     @include('templates.default.partials.theme-config')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         html { scroll-behavior: smooth; }
@@ -203,5 +202,6 @@
         </div>
     </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
 </body>
 </html>

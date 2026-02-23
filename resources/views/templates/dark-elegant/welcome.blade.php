@@ -25,6 +25,8 @@
         $publicationInfo = \App\Models\Setting::getValue('publication_info', 'Setiap makalah yang diterima dipublikasikan di Prosiding Seminar Nasional.');
         $selectedPapersInfo = \App\Models\Setting::getValue('selected_papers_info', 'Makalah terpilih akan diterbitkan pada jurnal-jurnal terindeks SINTA dan Google Scholar.');
         $poweredBy = \App\Models\Setting::getValue('powered_by', 'Powered by Laravel');
+        $_dmvRaw = \App\Models\Setting::getValue('default_menu_visibility', '{}');
+        $__dmv = is_array($_dmvRaw) ? $_dmvRaw : (json_decode($_dmvRaw, true) ?: []);
     @endphp
     <title>{{ $siteName }}</title>
     @if($siteDescription)
@@ -43,7 +45,6 @@
     @endif
     <script src="https://cdn.tailwindcss.com"></script>
     @include('templates.dark-elegant.partials.theme-config')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -78,20 +79,28 @@
                 {{-- Desktop nav --}}
                 <div class="hidden md:flex items-center space-x-1">
                     @if($activeConference)
+                    @if($__dmv['tentang'] ?? true)
                     <a href="#conference" class="text-sm text-gray-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition font-medium">{{ __('welcome.nav.tentang') }}</a>
+                    @endif
+                    @if($__dmv['tanggal_penting'] ?? true)
                     <a href="#dates" class="text-sm text-gray-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition font-medium">{{ __('welcome.nav.tanggal_penting') }}</a>
-                    @if($activeConference->keynoteSpeakers->count())
+                    @endif
+                    @if($activeConference->keynoteSpeakers->count() && ($__dmv['speaker'] ?? true))
                     <a href="#speakers" class="text-sm text-gray-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition font-medium">{{ __('welcome.nav.speaker') }}</a>
                     @endif
-                    @if($activeConference->journalPublications->where('is_active', true)->count())
+                    @if($activeConference->journalPublications->where('is_active', true)->count() && ($__dmv['jurnal'] ?? true))
                     <a href="#journals" class="text-sm text-gray-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition font-medium">{{ __('welcome.nav.jurnal') }}</a>
                     @endif
                     @endif
-                    @if($latestNews->count())
+                    @if($latestNews->count() && ($__dmv['berita'] ?? true))
                     <a href="#news" class="text-sm text-gray-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition font-medium">{{ __('welcome.nav.berita') }}</a>
                     @endif
+                    @if($__dmv['publikasi'] ?? true)
                     <a href="{{ route('proceedings') }}" class="text-sm text-gray-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition font-medium">{{ __('welcome.nav.publikasi') }}</a>
+                    @endif
+                    @if($__dmv['arsip'] ?? true)
                     <a href="{{ route('archive') }}" class="text-sm text-gray-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition font-medium">{{ __('welcome.nav.arsip') }}</a>
+                    @endif
 
                     {{-- Dynamic header menus --}}
                     @if($headerMenus->count())
@@ -100,10 +109,16 @@
 
                     <div class="w-px h-6 bg-gray-200 mx-2"></div>
                     @auth
+                        @if($__dmv['dashboard'] ?? true)
                         <a href="{{ url('/dashboard') }}" class="text-sm bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 font-medium transition shadow-sm">Dashboard</a>
+                        @endif
                     @else
+                        @if($__dmv['login'] ?? true)
                         <a href="{{ route('login') }}" class="text-sm text-gray-600 hover:text-blue-700 px-3 py-2 font-medium transition">Login</a>
+                        @endif
+                        @if($__dmv['register'] ?? true)
                         <a href="{{ route('register') }}" class="text-sm bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 font-medium transition shadow-sm">Register</a>
+                        @endif
                     @endauth
                 </div>
 
@@ -119,17 +134,25 @@
             {{-- Mobile menu --}}
             <div x-show="mobileOpen" x-cloak x-transition class="md:hidden pb-4 border-t space-y-1 pt-2">
                 @if($activeConference)
+                @if($__dmv['tentang'] ?? true)
                 <a href="#conference" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.tentang') }}</a>
+                @endif
+                @if($__dmv['tanggal_penting'] ?? true)
                 <a href="#dates" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.tanggal_penting') }}</a>
-                @if($activeConference->journalPublications->where('is_active', true)->count())
+                @endif
+                @if($activeConference->journalPublications->where('is_active', true)->count() && ($__dmv['jurnal'] ?? true))
                 <a href="#journals" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.jurnal') }}</a>
                 @endif
                 @endif
-                @if($latestNews->count())
+                @if($latestNews->count() && ($__dmv['berita'] ?? true))
                 <a href="#news" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.berita') }}</a>
                 @endif
+                @if($__dmv['publikasi'] ?? true)
                 <a href="{{ route('proceedings') }}" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.publikasi') }}</a>
+                @endif
+                @if($__dmv['arsip'] ?? true)
                 <a href="{{ route('archive') }}" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.arsip') }}</a>
+                @endif
 
                 {{-- Dynamic mobile menus --}}
                 @if($headerMenus->count())
@@ -140,10 +163,16 @@
 
                 <div class="flex gap-2 pt-2 px-3">
                     @auth
+                        @if($__dmv['dashboard'] ?? true)
                         <a href="{{ url('/dashboard') }}" class="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg font-medium w-full text-center">Dashboard</a>
+                        @endif
                     @else
+                        @if($__dmv['login'] ?? true)
                         <a href="{{ route('login') }}" class="text-sm border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium flex-1 text-center">Login</a>
+                        @endif
+                        @if($__dmv['register'] ?? true)
                         <a href="{{ route('register') }}" class="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex-1 text-center">Register</a>
+                        @endif
                     @endauth
                 </div>
             </div>
@@ -212,8 +241,12 @@
                 <div>
                     <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">{{ __('welcome.footer.link_cepat') }}</h4>
                     <ul class="space-y-2.5 text-sm">
+                        @if($__dmv['footer_login'] ?? true)
                         <li><a href="{{ route('login') }}" class="hover:text-white transition flex items-center gap-2"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>Login</a></li>
+                        @endif
+                        @if($__dmv['footer_register'] ?? true)
                         <li><a href="{{ route('register') }}" class="hover:text-white transition flex items-center gap-2"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>Register</a></li>
+                        @endif
                         @foreach($footerMenus as $fMenu)
                         <li>
                             <a href="{{ $fMenu->url ?: '#' }}" target="{{ $fMenu->target }}" class="hover:text-white transition flex items-center gap-2">
@@ -320,5 +353,6 @@
         </div>
     </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
 </body>
 </html>

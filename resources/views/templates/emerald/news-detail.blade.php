@@ -17,7 +17,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','system-ui','sans-serif']}}}}</script>
     @include('templates.emerald.partials.theme-config')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak]{display:none!important}
         .glass{background:rgba(255,255,255,0.8);backdrop-filter:blur(20px)}
@@ -205,5 +204,6 @@
             @if($poweredBy)<p class="mt-1 sm:mt-0">{{ $poweredBy }}</p>@endif
         </div>
     </footer>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
 </body>
 </html>

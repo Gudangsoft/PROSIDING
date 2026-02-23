@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Menu;
+use App\Models\Setting;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
@@ -22,6 +23,67 @@ class MenuManager extends Component
     public int $sort_order = 0;
 
     public bool $showForm = false;
+
+    // Default menu visibility toggles
+    public array $defaultMenuVisibility = [];
+
+    /**
+     * List of all default (hardcoded) menu items
+     */
+    public static function getDefaultMenuItems(): array
+    {
+        return [
+            ['key' => 'tentang',         'label' => 'Tentang',         'url' => '#conference',          'location' => 'header', 'conditional' => 'Tampil jika ada konferensi aktif'],
+            ['key' => 'tanggal_penting', 'label' => 'Tanggal Penting', 'url' => '#dates',               'location' => 'header', 'conditional' => 'Tampil jika ada konferensi aktif'],
+            ['key' => 'speaker',         'label' => 'Speaker',         'url' => '#speakers',            'location' => 'header', 'conditional' => 'Tampil jika ada keynote speaker'],
+            ['key' => 'jurnal',          'label' => 'Jurnal',          'url' => '#journals',            'location' => 'header', 'conditional' => 'Tampil jika ada jurnal aktif'],
+            ['key' => 'berita',          'label' => 'Berita',          'url' => '#news',                'location' => 'header', 'conditional' => 'Tampil jika ada berita'],
+            ['key' => 'publikasi',       'label' => 'Publikasi',       'url' => '/publikasi',           'location' => 'header', 'conditional' => null],
+            ['key' => 'arsip',           'label' => 'Arsip',           'url' => '/arsip',               'location' => 'header', 'conditional' => null],
+            ['key' => 'login',           'label' => 'Login',           'url' => '/login',               'location' => 'header', 'conditional' => 'Tampil untuk pengunjung (belum login)'],
+            ['key' => 'register',        'label' => 'Register',        'url' => '/register',            'location' => 'header', 'conditional' => 'Tampil untuk pengunjung (belum login)'],
+            ['key' => 'dashboard',       'label' => 'Dashboard',       'url' => '/dashboard',           'location' => 'header', 'conditional' => 'Tampil untuk pengguna yang sudah login'],
+            ['key' => 'footer_login',    'label' => 'Login',           'url' => '/login',               'location' => 'footer', 'conditional' => null],
+            ['key' => 'footer_register', 'label' => 'Register',        'url' => '/register',            'location' => 'footer', 'conditional' => null],
+        ];
+    }
+
+    public function mount(): void
+    {
+        $this->loadDefaultMenuVisibility();
+    }
+
+    public function loadDefaultMenuVisibility(): void
+    {
+        $saved = Setting::getValue('default_menu_visibility', []);
+        if (is_string($saved)) {
+            $saved = json_decode($saved, true) ?: [];
+        }
+        // Initialize all to visible (true) by default
+        $this->defaultMenuVisibility = [];
+        foreach (self::getDefaultMenuItems() as $item) {
+            $this->defaultMenuVisibility[$item['key']] = $saved[$item['key']] ?? true;
+        }
+    }
+
+    public function toggleDefaultMenu(string $key): void
+    {
+        $this->defaultMenuVisibility[$key] = !($this->defaultMenuVisibility[$key] ?? true);
+        Setting::setValue('default_menu_visibility', json_encode($this->defaultMenuVisibility), 'menu', 'json', 'Visibilitas Menu Default');
+        session()->flash('success', 'Visibilitas menu default diperbarui.');
+    }
+
+    /**
+     * Helper: check if a default menu item is visible
+     */
+    public static function isDefaultMenuVisible(string $key): bool
+    {
+        $saved = Setting::getValue('default_menu_visibility', []);
+        if (is_string($saved)) {
+            $saved = json_decode($saved, true) ?: [];
+        }
+        return $saved[$key] ?? true;
+    }
 
     protected function rules(): array
     {
@@ -212,6 +274,17 @@ class MenuManager extends Component
             $ids = array_merge($ids, $this->getDescendantIds($child->id));
         }
         return $ids;
+    }
+
+    /**
+     * Get default menus filtered by current location
+     */
+    public function getDefaultMenusProperty(): array
+    {
+        return collect(self::getDefaultMenuItems())
+            ->filter(fn($item) => $item['location'] === $this->location)
+            ->values()
+            ->toArray();
     }
 
     public function render()

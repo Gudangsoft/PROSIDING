@@ -1,6 +1,8 @@
 <div class="p-6 max-w-7xl mx-auto" x-data="{
     tab: @entangle('activeTab'),
     showSaveAs: @entangle('showSaveAsModal'),
+    showCreateTemplate: @entangle('showCreateTemplateModal'),
+    showImportTemplate: @entangle('showImportTemplateModal'),
 }">
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -27,11 +29,21 @@
         ═══════════════════════════════════════════════════════ --}}
         <div class="xl:col-span-1 space-y-4">
             <div class="bg-white rounded-xl shadow-sm border">
-                <div class="px-4 py-3 border-b bg-gray-50 rounded-t-xl">
+                <div class="px-4 py-3 border-b bg-gray-50 rounded-t-xl flex items-center justify-between">
                     <h2 class="text-sm font-bold text-gray-700 flex items-center gap-2">
                         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
                         Daftar Preset
                     </h2>
+                    <div class="flex items-center gap-1">
+                        <button wire:click="openImportTemplate" type="button" title="Impor Template (.zip)"
+                                class="p-1.5 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        </button>
+                        <button wire:click="openCreateTemplate" type="button" title="Buat Template Baru"
+                                class="p-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="p-3 space-y-2 max-h-[500px] overflow-y-auto">
                     @forelse($presets as $preset)
@@ -640,9 +652,15 @@
             <h3 class="text-lg font-bold text-gray-800 mb-4">Simpan Sebagai Tema Baru</h3>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Tema</label>
-                    <input type="text" wire:model="saveAsName" class="w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Nama tema baru">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Tema <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model.live="saveAsName" class="w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Nama tema baru">
                     @error('saveAsName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Template (Folder) <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model="saveAsLinkedTemplate" class="w-full border-gray-300 rounded-lg text-sm font-mono focus:ring-blue-500 focus:border-blue-500" placeholder="nama-template-baru">
+                    <p class="text-xs text-gray-400 mt-1">Huruf kecil, angka, dan tanda hubung saja. Harus berbeda dari template saat ini <span class="font-mono font-semibold text-gray-500">({{ $linkedTemplate }})</span></p>
+                    @error('saveAsLinkedTemplate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
@@ -654,6 +672,154 @@
                 <button wire:click="saveAs" type="button" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
                     <span wire:loading.remove wire:target="saveAs">Simpan</span>
                     <span wire:loading wire:target="saveAs">Menyimpan...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════
+         CREATE TEMPLATE MODAL
+    ═══════════════════════════════════════════════════════ --}}
+    <div x-show="showCreateTemplate" x-cloak x-transition class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div @click.outside="showCreateTemplate = false" class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 mx-4">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">Buat Template Baru</h3>
+                    <p class="text-xs text-gray-400">Buat template baru berdasarkan template yang sudah ada</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Template <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model.live="newTemplateName" class="w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Modern Hijau">
+                    @error('newTemplateName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Slug / Nama Folder <span class="text-red-500">*</span></label>
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs text-gray-400 font-mono whitespace-nowrap">templates/</span>
+                        <input type="text" wire:model="newTemplateSlug" class="w-full border-gray-300 rounded-lg text-sm font-mono focus:ring-blue-500 focus:border-blue-500" placeholder="modern-hijau">
+                        <span class="text-xs text-gray-400 font-mono">/</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Huruf kecil, angka, dan tanda hubung saja. Otomatis terisi dari nama.</p>
+                    @error('newTemplateSlug') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Template Dasar <span class="text-red-500">*</span></label>
+                    <select wire:model="newTemplateBase" class="w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                        @foreach($availableTemplates as $tpl)
+                        <option value="{{ $tpl }}">{{ ucfirst($tpl) }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-400 mt-1">File template dari template dasar akan disalin ke folder baru.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                    <input type="text" wire:model="newTemplateDescription" class="w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Deskripsi singkat template">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button @click="showCreateTemplate = false" type="button" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Batal</button>
+                <button wire:click="createTemplate" type="button" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span wire:loading.remove wire:target="createTemplate">Buat Template</span>
+                    <span wire:loading wire:target="createTemplate">Membuat...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════
+         IMPORT TEMPLATE MODAL
+    ═══════════════════════════════════════════════════════ --}}
+    <div x-show="showImportTemplate" x-cloak x-transition class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div @click.outside="showImportTemplate = false" class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 mx-4">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">Impor Template</h3>
+                    <p class="text-xs text-gray-400">Unggah file .zip untuk menginstal template baru</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                {{-- ZIP Upload --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">File Template (.zip) <span class="text-red-500">*</span></label>
+                    <div x-data="{ dragover: false }"
+                         @dragover.prevent="dragover = true"
+                         @dragleave.prevent="dragover = false"
+                         @drop.prevent="dragover = false; $refs.zipInput.files = $event.dataTransfer.files; $refs.zipInput.dispatchEvent(new Event('change'))"
+                         :class="dragover ? 'border-amber-400 bg-amber-50' : 'border-gray-300 bg-gray-50'"
+                         class="border-2 border-dashed rounded-lg p-6 text-center transition cursor-pointer hover:border-amber-300"
+                         @click="$refs.zipInput.click()">
+                        <input type="file" wire:model="importTemplateZip" accept=".zip" class="hidden" x-ref="zipInput">
+                        <div wire:loading.remove wire:target="importTemplateZip">
+                            @if($importTemplateZip)
+                            <div class="flex items-center justify-center gap-2 text-amber-700">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div class="text-left">
+                                    <p class="text-sm font-semibold">{{ $importTemplateZip->getClientOriginalName() }}</p>
+                                    <p class="text-xs text-gray-400">{{ number_format($importTemplateZip->getSize() / 1024, 1) }} KB — Klik untuk ganti</p>
+                                </div>
+                            </div>
+                            @else
+                            <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                            <p class="text-sm text-gray-500 font-medium">Klik atau seret file .zip di sini</p>
+                            <p class="text-xs text-gray-400 mt-1">Maksimal 50MB</p>
+                            @endif
+                        </div>
+                        <div wire:loading wire:target="importTemplateZip" class="flex items-center justify-center gap-2 text-amber-600">
+                            <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            <span class="text-sm">Mengunggah...</span>
+                        </div>
+                    </div>
+                    @error('importTemplateZip') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                {{-- Custom folder name --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Folder <span class="text-gray-400 text-xs font-normal">(opsional)</span></label>
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs text-gray-400 font-mono whitespace-nowrap">templates/</span>
+                        <input type="text" wire:model="importTemplateSlug" class="w-full border-gray-300 rounded-lg text-sm font-mono focus:ring-amber-500 focus:border-amber-500" placeholder="otomatis-dari-zip">
+                        <span class="text-xs text-gray-400 font-mono">/</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Kosongkan untuk menggunakan nama folder dari dalam ZIP secara otomatis.</p>
+                </div>
+
+                {{-- Overwrite option --}}
+                <label class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition">
+                    <input type="checkbox" wire:model="importOverwrite" class="mt-0.5 rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                    <div>
+                        <span class="text-sm font-medium text-gray-700">Timpa jika sudah ada</span>
+                        <p class="text-xs text-gray-400 mt-0.5">Jika template dengan nama folder yang sama sudah ada, file lama akan diganti dengan yang baru.</p>
+                    </div>
+                </label>
+
+                {{-- Info box --}}
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p class="text-xs text-blue-700 font-semibold mb-1">Format ZIP yang didukung:</p>
+                    <ul class="text-xs text-blue-600 space-y-0.5 ml-3 list-disc">
+                        <li>File .blade.php langsung di root ZIP</li>
+                        <li>Atau di dalam satu subfolder (seperti ekspor template)</li>
+                        <li>Opsional: file <code class="bg-blue-100 px-1 rounded">theme.json</code> untuk konfigurasi warna & preset</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button @click="showImportTemplate = false" type="button" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Batal</button>
+                <button wire:click="importTemplate" type="button" class="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 transition flex items-center gap-2"
+                        {{ $importTemplateZip ? '' : 'disabled' }}>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    <span wire:loading.remove wire:target="importTemplate">Instal Template</span>
+                    <span wire:loading wire:target="importTemplate">Menginstal...</span>
                 </button>
             </div>
         </div>

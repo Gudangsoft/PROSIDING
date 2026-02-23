@@ -32,6 +32,20 @@ class ThemeSettings extends Component
     public bool $showSaveAsModal = false;
     public string $saveAsName = '';
     public string $saveAsDescription = '';
+    public string $saveAsLinkedTemplate = '';
+
+    // Create new template modal
+    public bool $showCreateTemplateModal = false;
+    public string $newTemplateName = '';
+    public string $newTemplateSlug = '';
+    public string $newTemplateDescription = '';
+    public string $newTemplateBase = 'default';
+
+    // Import template
+    public bool $showImportTemplateModal = false;
+    public $importTemplateZip = null;
+    public string $importTemplateSlug = '';
+    public bool $importOverwrite = false;
 
     public function mount()
     {
@@ -147,17 +161,109 @@ class ThemeSettings extends Component
     {
         $this->saveAsName = $this->presetName . ' (Copy)';
         $this->saveAsDescription = $this->presetDescription;
+        $this->saveAsLinkedTemplate = Str::slug($this->saveAsName);
         $this->showSaveAsModal = true;
+    }
+
+    public function updatedSaveAsName($value)
+    {
+        // Auto-update template slug when name changes
+        $this->saveAsLinkedTemplate = Str::slug($value);
+    }
+
+    public function openCreateTemplate()
+    {
+        $this->newTemplateName = '';
+        $this->newTemplateSlug = '';
+        $this->newTemplateDescription = '';
+        $this->newTemplateBase = 'default';
+        $this->showCreateTemplateModal = true;
+    }
+
+    public function updatedNewTemplateName($value)
+    {
+        $this->newTemplateSlug = Str::slug($value);
+    }
+
+    public function createTemplate()
+    {
+        $this->validate([
+            'newTemplateName' => 'required|string|max:100',
+            'newTemplateSlug' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                function ($attribute, $value, $fail) {
+                    // Must be unique (not used by another preset)
+                    $exists = ThemePreset::where('linked_template', $value)->exists();
+                    if ($exists) {
+                        $fail('Nama template "' . $value . '" sudah digunakan oleh tema lain.');
+                    }
+                    // Must not already exist as a folder with a different owner
+                    $existsBySlug = ThemePreset::where('slug', $value)->exists();
+                    if ($existsBySlug) {
+                        $fail('Slug "' . $value . '" sudah digunakan.');
+                    }
+                },
+            ],
+            'newTemplateBase' => 'required|string',
+        ], [
+            'newTemplateSlug.regex' => 'Nama template hanya boleh berisi huruf kecil, angka, dan tanda hubung.',
+        ]);
+
+        // Create template folder by copying from base template
+        $templateSlug = $this->ensureTemplateFolder($this->newTemplateSlug, $this->newTemplateBase);
+
+        // Create preset with default values
+        $data = array_merge(ThemePreset::DEFAULTS, [
+            'name' => $this->newTemplateName,
+            'slug' => $this->newTemplateSlug,
+            'description' => $this->newTemplateDescription,
+            'linked_template' => $templateSlug,
+            'is_active' => false,
+            'is_default' => false,
+            'sections_config' => ThemePreset::DEFAULT_SECTIONS_CONFIG,
+        ]);
+
+        $preset = ThemePreset::create($data);
+
+        // Load the newly created preset for editing
+        $this->loadPreset($preset->id);
+        $this->showCreateTemplateModal = false;
+
+        session()->flash('success', "Template baru \"{$preset->name}\" berhasil dibuat. Silakan kustomisasi sesuai kebutuhan.");
     }
 
     public function saveAs()
     {
         $this->validate([
             'saveAsName' => 'required|string|max:100',
+            'saveAsLinkedTemplate' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                function ($attribute, $value, $fail) {
+                    // Must be different from current linked template
+                    if ($value === $this->linkedTemplate) {
+                        $fail('Nama template harus berbeda dari template yang sedang diedit.');
+                    }
+                    // Must be unique (not already used by another preset)
+                    $exists = ThemePreset::where('linked_template', $value)
+                        ->when($this->editingPresetId, fn($q) => $q->where('id', '!=', $this->editingPresetId))
+                        ->exists();
+                    if ($exists) {
+                        $fail('Nama template "' . $value . '" sudah digunakan oleh tema lain.');
+                    }
+                },
+            ],
+        ], [
+            'saveAsLinkedTemplate.regex' => 'Nama template hanya boleh berisi huruf kecil, angka, dan tanda hubung.',
         ]);
 
-        // Auto-generate template folder
-        $templateSlug = Str::slug($this->saveAsName);
+        // Use the user-specified template slug
+        $templateSlug = $this->saveAsLinkedTemplate;
         $newLinkedTemplate = $this->ensureTemplateFolder($templateSlug, $this->linkedTemplate ?: 'default');
 
         // Handle file upload
@@ -315,6 +421,220 @@ class ThemeSettings extends Component
         }
 
         return $slug;
+    }
+
+    // ─── Import Template ───────────────────────────────────────────
+
+    public function openImportTemplate()
+    {
+        $this->importTemplateZip = null;
+        $this->importTemplateSlug = '';
+        $this->importOverwrite = false;
+        $this->showImportTemplateModal = true;
+    }
+
+    public function importTemplate()
+    {
+        $this->validate([
+            'importTemplateZip' => 'required|file|mimes:zip|max:51200', // max 50MB
+        ], [
+            'importTemplateZip.required' => 'File ZIP template wajib diunggah.',
+            'importTemplateZip.mimes' => 'File harus berformat .zip.',
+            'importTemplateZip.max' => 'Ukuran file maksimal 50MB.',
+        ]);
+
+        $templatesPath = resource_path('views/templates');
+        $tempPath = storage_path('app/temp_template_' . Str::random(8));
+
+        try {
+            // Store uploaded file temporarily
+            $zipPath = $this->importTemplateZip->getRealPath();
+
+            // Open and extract ZIP
+            $zip = new \ZipArchive();
+            $result = $zip->open($zipPath);
+            if ($result !== true) {
+                throw new \Exception('Gagal membuka file ZIP. Pastikan file tidak rusak.');
+            }
+
+            // Extract to temp directory
+            File::ensureDirectoryExists($tempPath);
+            $zip->extractTo($tempPath);
+            $zip->close();
+
+            // Detect template root: might be extracted directly or inside a subfolder
+            $templateRoot = $this->detectTemplateRoot($tempPath);
+            if (!$templateRoot) {
+                throw new \Exception('Struktur template tidak valid. ZIP harus berisi file blade (.blade.php) dan minimal file welcome.blade.php.');
+            }
+
+            // Determine slug from folder name or override
+            $detectedSlug = basename($templateRoot);
+            // If root is the temp path itself, use the zip filename as slug
+            if (realpath($templateRoot) === realpath($tempPath)) {
+                $originalName = pathinfo($this->importTemplateZip->getClientOriginalName(), PATHINFO_FILENAME);
+                $detectedSlug = Str::slug($originalName);
+            }
+            $slug = $this->importTemplateSlug ?: $detectedSlug;
+            $slug = Str::slug($slug);
+
+            if (empty($slug)) {
+                throw new \Exception('Tidak dapat menentukan nama folder template. Isi kolom "Nama Folder" secara manual.');
+            }
+
+            $targetPath = $templatesPath . '/' . $slug;
+
+            // Check if already exists
+            if (File::isDirectory($targetPath) && !$this->importOverwrite) {
+                throw new \Exception('Template "' . $slug . '" sudah ada. Centang opsi "Timpa jika sudah ada" atau gunakan nama folder berbeda.');
+            }
+
+            // Remove existing if overwrite
+            if (File::isDirectory($targetPath) && $this->importOverwrite) {
+                File::deleteDirectory($targetPath);
+            }
+
+            // Copy template files to target
+            File::copyDirectory($templateRoot, $targetPath);
+
+            // Update @include paths inside blade files to match new slug
+            $this->updateBladeIncludes($targetPath, $slug);
+
+            // Check if theme.json / manifest exists for preset data
+            $presetData = $this->readTemplateManifest($targetPath);
+
+            // Create a ThemePreset record
+            $presetName = $presetData['name'] ?? ucfirst(str_replace('-', ' ', $slug));
+            $existingPreset = ThemePreset::where('linked_template', $slug)->first();
+
+            if ($existingPreset && $this->importOverwrite) {
+                // Update existing preset
+                $existingPreset->update(array_merge(
+                    ['name' => $presetName],
+                    ['description' => $presetData['description'] ?? $existingPreset->description],
+                    $this->extractPresetColors($presetData)
+                ));
+                $preset = $existingPreset;
+            } else {
+                // Create new preset
+                $data = array_merge(ThemePreset::DEFAULTS, $this->extractPresetColors($presetData), [
+                    'name' => $presetName,
+                    'slug' => $slug . '-' . Str::random(4),
+                    'description' => $presetData['description'] ?? 'Diimpor dari file ZIP',
+                    'linked_template' => $slug,
+                    'is_active' => false,
+                    'is_default' => false,
+                    'sections_config' => $presetData['sections_config'] ?? ThemePreset::DEFAULT_SECTIONS_CONFIG,
+                ]);
+                $preset = ThemePreset::create($data);
+            }
+
+            // Load the imported preset
+            $this->loadPreset($preset->id);
+            $this->showImportTemplateModal = false;
+            $this->importTemplateZip = null;
+
+            session()->flash('success', "Template \"{$presetName}\" berhasil diimpor ke folder templates/{$slug}/.");
+
+        } catch (\Exception $e) {
+            session()->flash('error', $e->getMessage());
+        } finally {
+            // Clean up temp directory
+            if (File::isDirectory($tempPath)) {
+                File::deleteDirectory($tempPath);
+            }
+        }
+    }
+
+    /**
+     * Detect the actual template root inside extracted ZIP.
+     * The ZIP might contain files directly or inside a single subfolder.
+     */
+    protected function detectTemplateRoot(string $path): ?string
+    {
+        // Check if welcome.blade.php exists at root level
+        if (File::exists($path . '/welcome.blade.php')) {
+            return $path;
+        }
+
+        // Check one level deep (common: zip contains a single folder)
+        $dirs = File::directories($path);
+        foreach ($dirs as $dir) {
+            if (File::exists($dir . '/welcome.blade.php')) {
+                return $dir;
+            }
+        }
+
+        // Check if any .blade.php files exist at root (partial template)
+        $bladeFiles = File::glob($path . '/*.blade.php');
+        if (!empty($bladeFiles)) {
+            return $path;
+        }
+
+        // Check one level deep for blade files
+        foreach ($dirs as $dir) {
+            $bladeFiles = File::glob($dir . '/*.blade.php');
+            if (!empty($bladeFiles)) {
+                return $dir;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Update @include / @extends paths in all blade files to match the new template slug.
+     */
+    protected function updateBladeIncludes(string $targetPath, string $slug): void
+    {
+        $bladeFiles = File::allFiles($targetPath);
+        foreach ($bladeFiles as $file) {
+            if ($file->getExtension() === 'php') {
+                $content = File::get($file->getPathname());
+                // Replace templates.{anything}. with templates.{slug}.
+                $updated = preg_replace(
+                    '/templates\.([a-z0-9\-]+)\./',
+                    'templates.' . $slug . '.',
+                    $content
+                );
+                if ($updated !== $content) {
+                    File::put($file->getPathname(), $updated);
+                }
+            }
+        }
+    }
+
+    /**
+     * Read theme.json manifest from imported template if it exists.
+     */
+    protected function readTemplateManifest(string $templatePath): array
+    {
+        $manifestPath = $templatePath . '/theme.json';
+        if (!File::exists($manifestPath)) {
+            return [];
+        }
+
+        try {
+            $data = json_decode(File::get($manifestPath), true);
+            return is_array($data) ? $data : [];
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Extract color/typo/layout fields from manifest data.
+     */
+    protected function extractPresetColors(array $manifest): array
+    {
+        $fields = array_merge(ThemePreset::COLOR_FIELDS, ThemePreset::TYPO_FIELDS, ThemePreset::LAYOUT_FIELDS);
+        $result = [];
+        foreach ($fields as $field) {
+            if (isset($manifest[$field])) {
+                $result[$field] = $manifest[$field];
+            }
+        }
+        return $result;
     }
 
     /**
