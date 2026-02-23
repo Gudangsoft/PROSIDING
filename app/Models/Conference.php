@@ -20,6 +20,7 @@ class Conference extends Model
         'loa_generation_mode', 'certificate_generation_mode',
         'visible_sections', 'hidden_speaker_types',
         'wa_group_pemakalah', 'wa_group_non_pemakalah', 'wa_group_reviewer', 'wa_group_editor',
+        'read_more_url',
     ];
 
     protected $casts = [

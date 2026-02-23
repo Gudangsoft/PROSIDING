@@ -38,7 +38,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
 
                 {{-- LEFT: Description + Topics --}}
-                <div class="lg:col-span-5 order-2 lg:order-1" x-data="{ expanded: false }">
+                <div class="lg:col-span-5 order-2 lg:order-1">
 
                     @if($activeConference->description)
                     <div class="bg-gradient-to-br from-slate-50 to-blue-50/40 rounded-2xl border border-blue-100/60 p-6 mb-6 relative overflow-hidden">
@@ -49,19 +49,16 @@
                             </div>
                             <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Tentang Konferensi</h3>
                         </div>
-                        <div class="relative">
-                            <div class="prose prose-sm prose-blue max-w-none text-gray-600 leading-relaxed"
-                                 :class="expanded ? '' : 'max-h-40 overflow-hidden'">
-                                {!! nl2br(e($activeConference->description)) !!}
-                            </div>
-                            <div x-show="!expanded"
-                                 class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-slate-50/95 to-transparent pointer-events-none"></div>
+                        <div class="prose prose-sm prose-blue max-w-none text-gray-600 leading-relaxed line-clamp-5">
+                            {!! nl2br(e($activeConference->description)) !!}
                         </div>
-                        <button @click="expanded = !expanded"
-                                class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group">
-                            <span x-text="expanded ? 'Sembunyikan' : 'Baca Selengkapnya'"></span>
-                            <svg class="w-4 h-4 transition-transform group-hover:translate-y-0.5" :class="expanded ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </button>
+                        @if($activeConference->read_more_url)
+                        <a href="{{ $activeConference->read_more_url }}" target="_blank" rel="noopener"
+                           class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group">
+                            Baca Selengkapnya
+                            <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </a>
+                        @endif
                     </div>
                     @endif
 

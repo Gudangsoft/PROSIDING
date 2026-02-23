@@ -31,6 +31,7 @@ class ConferenceForm extends Component
     public string $acronym = '';
     public string $theme = '';
     public string $description = '';
+    public string $read_more_url = '';
     public string $start_date = '';
     public string $start_time = '';
     public string $end_date = '';
@@ -116,6 +117,7 @@ class ConferenceForm extends Component
                 'acronym' => $conference->acronym ?? '',
                 'theme' => $conference->theme ?? '',
                 'description' => $conference->description ?? '',
+                'read_more_url' => $conference->read_more_url ?? '',
                 'start_date' => $conference->start_date?->format('Y-m-d') ?? '',
                 'start_time' => $conference->start_time ? \Carbon\Carbon::parse($conference->start_time)->format('H:i') : '',
                 'end_date' => $conference->end_date?->format('Y-m-d') ?? '',
@@ -528,6 +530,7 @@ class ConferenceForm extends Component
             'acronym' => 'nullable|string|max:50',
             'theme' => 'nullable|string|max:500',
             'description' => 'nullable|string',
+            'read_more_url' => 'nullable|url|max:500',
             'start_date' => 'nullable|date',
             'start_time' => 'nullable|date_format:H:i',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -564,6 +567,7 @@ class ConferenceForm extends Component
             'wa_group_non_pemakalah.url' => 'Link grup WA Non-Pemakalah harus berupa URL yang valid.',
             'wa_group_reviewer.url' => 'Link grup WA Reviewer harus berupa URL yang valid.',
             'wa_group_editor.url' => 'Link grup WA Editor harus berupa URL yang valid.',
+            'read_more_url.url' => 'Link "Baca Selengkapnya" harus berupa URL yang valid.',
         ]);
 
         $data = [
@@ -571,6 +575,7 @@ class ConferenceForm extends Component
             'acronym' => $this->acronym ?: null,
             'theme' => $this->theme ?: null,
             'description' => $this->description ?: null,
+            'read_more_url' => $this->read_more_url ?: null,
             'start_date' => $this->start_date ?: null,
             'start_time' => $this->start_time ?: null,
             'end_date' => $this->end_date ?: null,
