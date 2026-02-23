@@ -350,7 +350,7 @@
         </div>
     </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+<script src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
 <script>
 function toggleMobileMenu() {
     var menu = document.getElementById('mobile-menu');
