@@ -57,10 +57,7 @@
     {{-- ═══════════════════════════════════════════════════════════════════
          NAVBAR — Fixed, transparent on hero, solid on scroll
     ═══════════════════════════════════════════════════════════════════ --}}
-    <nav x-data="{ scrolled: false, mobileOpen: false }"
-         @scroll.window="scrolled = (window.scrollY > 60)"
-         :class="scrolled ? 'bg-white shadow-md' : 'bg-white/90 backdrop-blur'"
-         class="fixed top-0 w-full z-50 transition-all duration-300">
+    <nav id="main-nav" class="fixed top-0 w-full z-50 transition-all duration-300 bg-white/90 backdrop-blur">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center gap-3">
@@ -123,35 +120,35 @@
                 </div>
 
                 {{-- Mobile hamburger --}}
-                <button @click="mobileOpen = !mobileOpen" class="md:hidden flex items-center text-gray-600 hover:text-blue-700">
+                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden flex items-center text-gray-600 hover:text-blue-700 relative z-50">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path x-show="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                        <path x-show="mobileOpen" x-cloak stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path id="hamburger-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        <path id="close-icon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
             {{-- Mobile menu --}}
-            <div x-show="mobileOpen" x-cloak x-transition class="md:hidden pb-4 border-t space-y-1 pt-2">
+            <div id="mobile-menu" class="md:hidden pb-4 border-t space-y-1 pt-2 hidden">
                 @if($activeConference)
                 @if($__dmv['tentang'] ?? true)
-                <a href="#conference" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.tentang') }}</a>
+                <a href="#conference" onclick="closeMobileMenu()" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.tentang') }}</a>
                 @endif
                 @if($__dmv['tanggal_penting'] ?? true)
-                <a href="#dates" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.tanggal_penting') }}</a>
+                <a href="#dates" onclick="closeMobileMenu()" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.tanggal_penting') }}</a>
                 @endif
                 @if($activeConference->journalPublications->where('is_active', true)->count() && ($__dmv['jurnal'] ?? true))
-                <a href="#journals" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.jurnal') }}</a>
+                <a href="#journals" onclick="closeMobileMenu()" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.jurnal') }}</a>
                 @endif
                 @endif
                 @if($latestNews->count() && ($__dmv['berita'] ?? true))
-                <a href="#news" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.berita') }}</a>
+                <a href="#news" onclick="closeMobileMenu()" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.berita') }}</a>
                 @endif
                 @if($__dmv['publikasi'] ?? true)
-                <a href="{{ route('proceedings') }}" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.publikasi') }}</a>
+                <a href="{{ route('proceedings') }}" onclick="closeMobileMenu()" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.publikasi') }}</a>
                 @endif
                 @if($__dmv['arsip'] ?? true)
-                <a href="{{ route('archive') }}" @click="mobileOpen=false" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.arsip') }}</a>
+                <a href="{{ route('archive') }}" onclick="closeMobileMenu()" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg">{{ __('welcome.nav.arsip') }}</a>
                 @endif
 
                 {{-- Dynamic mobile menus --}}
@@ -354,5 +351,39 @@
     </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+<script>
+function toggleMobileMenu() {
+    var menu = document.getElementById('mobile-menu');
+    var hamburger = document.getElementById('hamburger-icon');
+    var close = document.getElementById('close-icon');
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        hamburger.classList.add('hidden');
+        close.classList.remove('hidden');
+    } else {
+        menu.classList.add('hidden');
+        hamburger.classList.remove('hidden');
+        close.classList.add('hidden');
+    }
+}
+function closeMobileMenu() {
+    var menu = document.getElementById('mobile-menu');
+    var hamburger = document.getElementById('hamburger-icon');
+    var close = document.getElementById('close-icon');
+    menu.classList.add('hidden');
+    hamburger.classList.remove('hidden');
+    close.classList.add('hidden');
+}
+window.addEventListener('scroll', function() {
+    var nav = document.getElementById('main-nav');
+    if (window.scrollY > 60) {
+        nav.classList.remove('bg-white/90', 'backdrop-blur');
+        nav.classList.add('bg-white', 'shadow-md');
+    } else {
+        nav.classList.remove('bg-white', 'shadow-md');
+        nav.classList.add('bg-white/90', 'backdrop-blur');
+    }
+});
+</script>
 </body>
 </html>
