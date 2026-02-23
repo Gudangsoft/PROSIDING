@@ -49,7 +49,7 @@
                             </div>
                             <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Tentang Konferensi</h3>
                         </div>
-                        <div class="prose prose-sm prose-blue max-w-none text-gray-600 leading-relaxed line-clamp-5">
+                        <div class="text-gray-600 leading-relaxed text-sm" style="display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;">
                             {!! nl2br(e($activeConference->description)) !!}
                         </div>
                         @if($activeConference->read_more_url)
@@ -58,6 +58,11 @@
                             Baca Selengkapnya
                             <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </a>
+                        @else
+                        <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-gray-400 cursor-default select-none">
+                            Baca Selengkapnya
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </span>
                         @endif
                     </div>
                     @endif
