@@ -24,6 +24,7 @@
                     </div>
                     @endif
 
+                    <style>#topics-scroll::-webkit-scrollbar{display:none}</style>
                     {{-- Topics --}}
                     @if($activeConference->topics->count())
                     <div class="mt-8">
@@ -31,7 +32,15 @@
                             <div class="w-1 h-5 bg-blue-600 rounded-full"></div>
                             <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">{{ __('welcome.conference.topik_bidang') }}</h3>
                         </div>
-                        <div class="flex flex-nowrap overflow-x-auto gap-2 pb-1 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
+                        <div class="relative">
+                            {{-- gradient fade kiri --}}
+                            <div class="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10"></div>
+                            {{-- gradient fade kanan --}}
+                            <div class="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent z-10"></div>
+                            <div id="topics-scroll" class="flex flex-nowrap overflow-x-auto gap-2 px-2 py-1"
+                                 style="-webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none;"
+                                 onscroll="this.previousElementSibling.style.opacity=this.scrollLeft>4?'1':'0'"
+                            >
                             @foreach($activeConference->topics->sortBy('sort_order') as $index => $topic)
                             @php
                                 $colors = [
@@ -49,7 +58,8 @@
                                 {{ $topic->name }}
                             </span>
                             @endforeach
-                        </div>
+                            </div>{{-- end scroll inner --}}
+                        </div>{{-- end relative wrapper --}}
                     </div>
                     @endif
                 </div>

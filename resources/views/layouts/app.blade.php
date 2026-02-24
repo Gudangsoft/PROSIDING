@@ -48,11 +48,19 @@
 
             {{-- Logo --}}
             <div class="flex items-center justify-between h-16 px-5 border-b border-gray-200 shrink-0">
-                <a href="{{ url('/') }}" class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                    </div>
-                    <span class="text-lg font-bold text-gray-800">Prosiding</span>
+                @php
+                    $adminSiteLogo = \App\Models\Setting::getValue('site_logo');
+                    $adminSiteName = \App\Models\Setting::getValue('site_name', 'Prosiding');
+                @endphp
+                <a href="{{ url('/') }}" class="flex items-center gap-2.5 min-w-0">
+                    @if($adminSiteLogo)
+                        <img src="{{ asset('storage/' . $adminSiteLogo) }}" alt="{{ $adminSiteName }}" class="h-8 w-8 object-contain rounded-lg shrink-0">
+                    @else
+                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                        </div>
+                    @endif
+                    <span class="text-lg font-bold text-gray-800 truncate">{{ $adminSiteName }}</span>
                 </a>
                 <button @click="sidebarOpen = false" class="lg:hidden text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -279,11 +287,24 @@
         <div class="flex-1 flex flex-col min-w-0">
             {{-- Top Bar --}}
             <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 shrink-0">
-                <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-                <div class="hidden lg:block">
-                    <h1 class="text-lg font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
+                <div class="flex items-center gap-3">
+                    <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    {{-- Mobile brand --}}
+                    <a href="{{ url('/') }}" class="flex items-center gap-2 lg:hidden">
+                        @if($adminSiteLogo ?? \App\Models\Setting::getValue('site_logo'))
+                            <img src="{{ asset('storage/' . ($adminSiteLogo ?? \App\Models\Setting::getValue('site_logo'))) }}" alt="Logo" class="h-8 w-8 object-contain rounded-lg">
+                        @else
+                            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                            </div>
+                        @endif
+                        <span class="text-base font-bold text-gray-800">{{ $adminSiteName ?? \App\Models\Setting::getValue('site_name', 'Prosiding') }}</span>
+                    </a>
+                    <div class="hidden lg:block">
+                        <h1 class="text-lg font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
+                    </div>
                 </div>
                 <div class="flex items-center gap-3">
                     {{-- Notification Bell --}}
