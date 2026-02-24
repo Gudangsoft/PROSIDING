@@ -259,6 +259,12 @@
                         </span>
                     </div>
                 </div>
+                <a href="{{ route('profile') }}"
+                   class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition mb-1
+                   {{ request()->routeIs('profile') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Edit Profil
+                </a>
                 <form method="POST" action="{{ route('logout') }}" wire:ignore>
                     @csrf
                     <button type="submit" onclick="event.stopPropagation(); this.closest('form').submit();" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition cursor-pointer">
@@ -339,7 +345,84 @@
                         </div>
                     </div>
                     
-                    <span class="text-sm text-gray-500 hidden sm:inline">{{ Auth::user()->email }}</span>
+                    {{-- Profile Dropdown --}}
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" @click.outside="open = false"
+                                class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition focus:outline-none">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
+                            <div class="hidden sm:block text-left">
+                                <p class="text-sm font-medium text-gray-800 leading-tight max-w-[120px] truncate">{{ Auth::user()->name }}</p>
+                                <p class="text-xs text-gray-500 leading-tight max-w-[120px] truncate">{{ Auth::user()->email }}</p>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-400 hidden sm:block transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-cloak
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden"
+                             style="display:none;">
+
+                            {{-- User info header --}}
+                            <div class="px-4 py-3.5 border-b border-gray-100 flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-base shrink-0">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-gray-800 truncate">{{ Auth::user()->name }}</p>
+                                    <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                                    <span class="inline-flex items-center mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold
+                                        @if(Auth::user()->role==='admin') bg-red-100 text-red-700
+                                        @elseif(Auth::user()->role==='editor') bg-purple-100 text-purple-700
+                                        @elseif(Auth::user()->role==='reviewer') bg-indigo-100 text-indigo-700
+                                        @else bg-blue-100 text-blue-700 @endif">
+                                        {{ ucfirst(Auth::user()->role) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- Menu items --}}
+                            <div class="py-1.5">
+                                <a href="{{ route('profile') }}"
+                                   @click="open = false"
+                                   class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition {{ request()->routeIs('profile') ? 'bg-blue-50 text-blue-700' : '' }}">
+                                    <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    Edit Profil
+                                </a>
+                                <a href="{{ url('/') }}" target="_blank"
+                                   @click="open = false"
+                                   class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                    <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                    </svg>
+                                    Lihat Website
+                                </a>
+                            </div>
+
+                            <div class="border-t border-gray-100 py-1.5">
+                                <form method="POST" action="{{ route('logout') }}" wire:ignore>
+                                    @csrf
+                                    <button type="submit"
+                                            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition cursor-pointer">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                        </svg>
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
