@@ -3,6 +3,9 @@
 namespace App\Livewire\Reviewer;
 
 use App\Models\Review;
+use App\Models\ReviewRubric;
+use App\Models\ReviewCriterionScore;
+use App\Models\PaperStatusLog;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +20,11 @@ class ReviewForm extends Component
     public string $recommendation = '';
     public $reviewFile;
 
+    // Rubric scoring
+    public array $criterionScores = [];   // [criterionId => score]
+    public array $criterionComments = []; // [criterionId => comment]
+    public ?ReviewRubric $rubric = null;
+
     public function mount(Review $review)
     {
         if ($review->reviewer_id !== Auth::id()) abort(403);
@@ -25,6 +33,17 @@ class ReviewForm extends Component
         $this->comments = $review->comments ?? '';
         $this->commentsForEditor = $review->comments_for_editor ?? '';
         $this->recommendation = $review->recommendation ?? '';
+
+        // Load rubric for this conference
+        $this->rubric = $review->paper->conference?->activeRubric();
+        if ($this->rubric) {
+            foreach ($this->rubric->criteria as $c) {
+                $existing = \App\Models\ReviewCriterionScore::where('review_id', $review->id)
+                    ->where('rubric_criterion_id', $c->id)->first();
+                $this->criterionScores[$c->id]   = $existing?->score ?? 0;
+                $this->criterionComments[$c->id] = $existing?->comment ?? '';
+            }
+        }
     }
 
     public function saveReview()
@@ -37,8 +56,6 @@ class ReviewForm extends Component
             'comments.required' => 'Komentar review wajib diisi.',
             'comments.min' => 'Komentar minimal 20 karakter.',
             'recommendation.required' => 'Rekomendasi wajib dipilih.',
-            'reviewFile.mimes' => 'File harus berformat Word (.doc, .docx).',
-            'reviewFile.max' => 'Ukuran file maksimal 20MB.',
         ]);
 
         $data = [
@@ -56,6 +73,34 @@ class ReviewForm extends Component
         }
 
         $this->review->update($data);
+
+        // Save rubric scores
+        if ($this->rubric) {
+            foreach ($this->criterionScores as $criterionId => $score) {
+                ReviewCriterionScore::updateOrCreate(
+                    ['review_id' => $this->review->id, 'rubric_criterion_id' => $criterionId],
+                    [
+                        'score'   => (int) $score,
+                        'comment' => $this->criterionComments[$criterionId] ?? null,
+                    ]
+                );
+            }
+            // Update review.score with calculated weighted score
+            $calcScore = $this->review->fresh()->calculated_score;
+            if ($calcScore !== null) {
+                $this->review->update(['score' => $calcScore]);
+            }
+        }
+
+        // Log to paper history
+        PaperStatusLog::log(
+            $this->review->paper_id,
+            $this->review->paper->status,
+            $this->review->paper->status,
+            'review_submitted',
+            'Reviewer: ' . Auth::user()->name . ' — ' . $this->recommendation,
+            ['recommendation' => $this->recommendation, 'reviewer_id' => Auth::id()]
+        );
 
         // Send notification to admins/editors
         $adminIds = \App\Models\User::whereIn('role', ['admin', 'editor'])->pluck('id');
@@ -99,7 +144,8 @@ class ReviewForm extends Component
 
     public function render()
     {
-        $this->review->load(['paper.user', 'paper.files']);
-        return view('livewire.reviewer.review-form')->layout('layouts.app');
+        $this->review->load(['paper.user', 'paper.files', 'paper.conference']);
+        $blindReview = $this->review->paper->conference?->blind_review ?? false;
+        return view('livewire.reviewer.review-form', compact('blindReview'))->layout('layouts.app');
     }
 }

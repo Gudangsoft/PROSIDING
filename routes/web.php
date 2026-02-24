@@ -51,6 +51,19 @@ use App\Livewire\Participant\PaymentProof;
 use App\Livewire\Participant\ParticipantInfo;
 use App\Livewire\Participant\MaterialList as ParticipantMaterialList;
 use App\Http\Controllers\NotificationController;
+use App\Livewire\Admin\ReviewRubricManager;
+use App\Livewire\Admin\PaperSimilarityCheck;
+use App\Livewire\Admin\ProgramBookGenerator;
+use App\Livewire\Admin\SubmissionFormBuilder;
+use App\Livewire\Admin\OjsIntegration;
+use App\Livewire\Admin\ConferencePageBuilder;
+use App\Livewire\Admin\AcceptanceLetterManager;
+use App\Livewire\Admin\CameraReadyManager;
+use App\Livewire\Admin\RevisionManager;
+use App\Livewire\Admin\SubmissionAnalytics;
+use App\Livewire\Author\CameraReadyUpload;
+use App\Livewire\Author\RevisionRequestView;
+use App\Livewire\Author\AuthorDashboard;
 use App\Helpers\Template;
 
 Route::get('/', function () {
@@ -117,6 +130,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/abstracts', AuthorAbstractList::class)->name('author.abstracts');
         Route::get('/abstracts/create', SubmitAbstract::class)->name('author.abstract.create');
         Route::get('/abstracts/{id}/edit', SubmitAbstract::class)->name('author.abstract.edit');
+        Route::get('/dashboard', AuthorDashboard::class)->name('author.dashboard');
+        Route::get('/papers/{paper}/camera-ready', CameraReadyUpload::class)->name('author.paper.camera-ready');
+        Route::get('/papers/{paper}/revisions', RevisionRequestView::class)->name('author.paper.revisions');
     });
 
     // ─── Reviewer Routes ───
@@ -140,6 +156,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/statistics', DashboardStats::class)->name('admin.stats');
         Route::get('/reports', ReportsManager::class)->name('admin.reports');
         Route::get('/auto-reviewer', AutoReviewerAssign::class)->name('admin.auto-reviewer');
+
+        // New Feature Routes (Batch 3)
+        Route::get('/acceptance-letters', AcceptanceLetterManager::class)->name('admin.acceptance-letters');
+        Route::get('/camera-ready', CameraReadyManager::class)->name('admin.camera-ready');
+        Route::get('/revisions', RevisionManager::class)->name('admin.revisions');
+        Route::get('/analytics', SubmissionAnalytics::class)->name('admin.analytics');
+
+        // New Feature Routes (Batch 2)
+        Route::get('/review-rubrics', ReviewRubricManager::class)->name('admin.review-rubrics');
+        Route::get('/paper-similarity', PaperSimilarityCheck::class)->name('admin.paper-similarity');
+        Route::get('/program-book', ProgramBookGenerator::class)->name('admin.program-book');
+        Route::get('/submission-fields', SubmissionFormBuilder::class)->name('admin.submission-fields');
+        Route::get('/ojs', OjsIntegration::class)->name('admin.ojs');
+        Route::get('/page-builder', ConferencePageBuilder::class)->name('admin.page-builder');
 
         // Export Routes
         Route::get('/reports/participants', [ReportExportController::class, 'participants'])->name('admin.reports.participants');

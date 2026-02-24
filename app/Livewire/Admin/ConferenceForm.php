@@ -42,6 +42,8 @@ class ConferenceForm extends Component
     public string $city = '';
     public string $organizer = '';
     public string $status = 'draft';
+    public bool $blind_review = false;
+    public bool $submission_locked = false;
     public string $conferenceType = 'nasional';
     public string $loaGenerationMode = 'manual';
     public string $certificateGenerationMode = 'manual';
@@ -128,6 +130,8 @@ class ConferenceForm extends Component
                 'city' => $conference->city ?? '',
                 'organizer' => $conference->organizer ?? '',
                 'status' => $conference->status,
+                'blind_review' => (bool) ($conference->blind_review ?? false),
+                'submission_locked' => (bool) ($conference->submission_locked ?? false),
                 'conferenceType' => $conference->conference_type ?? 'nasional',
                 'loaGenerationMode' => $conference->loa_generation_mode ?? 'manual',
                 'certificateGenerationMode' => $conference->certificate_generation_mode ?? 'manual',
@@ -593,6 +597,8 @@ class ConferenceForm extends Component
             'payment_instructions' => $this->payment_instructions ?: null,
             'payment_methods' => !empty($this->paymentMethods) ? $this->paymentMethods : null,
             'status' => $this->status,
+            'blind_review' => $this->blind_review,
+            'submission_locked' => $this->submission_locked,
             'loa_generation_mode' => $this->loaGenerationMode,
             'certificate_generation_mode' => $this->certificateGenerationMode,
         ];

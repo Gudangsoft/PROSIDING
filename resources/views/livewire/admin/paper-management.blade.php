@@ -118,12 +118,30 @@
             </div>
         </div>
 
+        {{-- Bulk Action Toolbar --}}
+        @if(count($selectedPapers) > 0)
+        <div class="flex items-center gap-3 px-5 py-3 bg-indigo-50 border-b border-indigo-200">
+            <span class="text-sm font-semibold text-indigo-700">{{ count($selectedPapers) }} paper dipilih</span>
+            <button wire:click="openBulkAction" class="px-4 py-1.5 bg-indigo-600 text-white rounded text-sm font-semibold hover:bg-indigo-700">Aksi Bulk</button>
+            <button wire:click="$set('selectedPapers', [])" class="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700">Batalkan</button>
+        </div>
+        @endif
+
+        {{-- Select All Bar --}}
+        <div class="flex items-center gap-3 px-5 py-2 bg-gray-50 border-b border-gray-200">
+            <label class="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                <input type="checkbox" wire:model.live="selectAll" class="w-4 h-4 text-indigo-600 rounded">
+                Pilih semua halaman ini
+            </label>
+        </div>
+
         {{-- Paper List --}}
         <div class="divide-y divide-gray-100">
             @forelse($papers as $paper)
             <div class="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group">
                 {{-- Left: ID, Author, Title --}}
                 <div class="flex items-start gap-4 flex-1 min-w-0">
+                    <input type="checkbox" wire:model.live="selectedPapers" value="{{ $paper->id }}" class="mt-1 w-4 h-4 text-indigo-600 rounded flex-shrink-0">
                     <span class="text-sm text-blue-600 font-medium mt-0.5 flex-shrink-0">{{ $paper->id }}</span>
                     <div class="min-w-0">
                         <p class="text-sm font-bold text-gray-800">{{ $paper->user->name }}</p>
@@ -223,6 +241,56 @@
     <div class="mt-4">{{ $papers->links() }}</div>
 
     {{-- ═══ ASSIGN EDITOR MODAL ═══ --}}
+    {{-- ═══ BULK ACTION MODAL ═══ --}}
+    @if($showBulkModal)
+    <div class="fixed inset-0 bg-black/50 flex items-start justify-center pt-20 z-50" wire:click.self="$set('showBulkModal', false)">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md" @click.stop>
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800">Aksi Bulk ({{ count($selectedPapers) }} paper)</h3>
+                <button wire:click="$set('showBulkModal', false)" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Aksi</label>
+                    <select wire:model.live="bulkAction" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">-- Pilih Aksi --</option>
+                        <option value="change_status">Ubah Status</option>
+                        <option value="assign_reviewer">Assign Reviewer</option>
+                    </select>
+                </div>
+                @if($bulkAction === 'change_status')
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status Baru</label>
+                    <select wire:model="bulkTargetStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">-- Pilih Status --</option>
+                        @foreach(\App\Models\Paper::STATUS_LABELS as $k => $v)
+                        <option value="{{ $k }}">{{ $v }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @elseif($bulkAction === 'assign_reviewer')
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reviewer</label>
+                    <select wire:model="bulkReviewerId" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">-- Pilih Reviewer --</option>
+                        @foreach($editors as $editor)
+                        <option value="{{ $editor->id }}">{{ $editor->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+            </div>
+            <div class="flex justify-end gap-2 px-5 py-4 border-t bg-gray-50 rounded-b-lg">
+                <button wire:click="executeBulkAction" type="button" class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                    <span wire:loading.remove wire:target="executeBulkAction">Terapkan</span>
+                    <span wire:loading wire:target="executeBulkAction">Memproses...</span>
+                </button>
+                <button wire:click="$set('showBulkModal', false)" type="button" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Batal</button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     @if($showAssignEditorModal)
     <div class="fixed inset-0 bg-black/50 flex items-start justify-center pt-20 z-50" wire:click.self="closeAssignEditor">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md" @click.stop>

@@ -63,7 +63,7 @@ class PaperDetail extends Component
 
     public function render()
     {
-        $this->paper->load(['files', 'reviews.reviewer', 'payment', 'deliverables']);
+        $this->paper->load(['files', 'reviews.reviewer', 'payment', 'deliverables', 'statusLogs.user', 'conference']);
         return view('livewire.author.paper-detail')->layout('layouts.app');
     }
 }

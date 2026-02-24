@@ -53,12 +53,16 @@
                 'review' => 'Review',
                 'copyediting' => 'Copyediting',
                 'production' => 'Production',
+                'meeting' => 'Meeting',
+                'history' => 'Riwayat',
             ];
             $tabColors = [
                 'submission' => 'border-pink-500',
                 'review' => 'border-blue-500',
                 'copyediting' => 'border-purple-500',
                 'production' => 'border-green-500',
+                'meeting' => 'border-cyan-500',
+                'history' => 'border-amber-500',
             ];
         @endphp
         <div class="border-b border-gray-200 px-5">
@@ -673,6 +677,84 @@
                             @endforeach
                         </div>
                     </div>
+                @endif
+
+                {{-- ════ MEETING TAB ════ --}}
+                @if($workflowTab === 'meeting')
+                <div class="border border-gray-200 rounded mb-5">
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-sm font-bold text-gray-800">Link Meeting / Presentasi</h3>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Platform</label>
+                            <select wire:model="meetingPlatform" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                                <option value="">-- Pilih --</option>
+                                <option value="zoom">Zoom</option>
+                                <option value="google_meet">Google Meet</option>
+                                <option value="teams">Microsoft Teams</option>
+                                <option value="other">Lainnya</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Link Meeting</label>
+                            <input wire:model="meetingLink" type="url" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="https://zoom.us/j/...">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Jadwal Presentasi</label>
+                            <input wire:model="meetingScheduledAt" type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                        </div>
+                        <button wire:click="saveMeetingInfo" class="px-5 py-2 bg-cyan-600 text-white rounded text-sm font-semibold hover:bg-cyan-700">
+                            <span wire:loading.remove wire:target="saveMeetingInfo">💾 Simpan</span>
+                            <span wire:loading wire:target="saveMeetingInfo">Menyimpan...</span>
+                        </button>
+                        @if($paper->meeting_link)
+                        <div class="mt-3 p-3 bg-cyan-50 border border-cyan-200 rounded">
+                            <p class="text-xs font-semibold text-cyan-700 mb-1">✅ Link Tersimpan</p>
+                            <p class="text-xs text-gray-600">Platform: {{ $paper->meeting_platform ?? '-' }}</p>
+                            <a href="{{ $paper->meeting_link }}" target="_blank" class="text-xs text-blue-600 hover:underline break-all">{{ $paper->meeting_link }}</a>
+                            @if($paper->meeting_scheduled_at)
+                            <p class="text-xs text-gray-500 mt-1">🗓️ {{ $paper->meeting_scheduled_at?->format('d M Y H:i') }}</p>
+                            @endif
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                {{-- ════ HISTORY TAB ════ --}}
+                @if($workflowTab === 'history')
+                <div class="border border-gray-200 rounded mb-5">
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-sm font-bold text-gray-800">Riwayat Aktivitas Paper</h3>
+                    </div>
+                    @php $logs = $paper->statusLogs()->with('user')->orderByDesc('occurred_at')->get(); @endphp
+                    @if($logs->isEmpty())
+                    <p class="p-4 text-sm text-gray-400 italic">Belum ada riwayat tercatat.</p>
+                    @else
+                    <div class="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+                        @foreach($logs as $log)
+                        @php $actionLabel = \App\Models\PaperStatusLog::ACTIONS[$log->action] ?? ucwords(str_replace('_', ' ', $log->action ?? '')); @endphp
+                        <div class="px-4 py-3">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800">{{ $actionLabel }}</p>
+                                    @if($log->from_status || $log->to_status)
+                                    <p class="text-xs text-gray-500">
+                                        {{ \App\Models\Paper::STATUS_LABELS[$log->from_status] ?? $log->from_status }}
+                                        @if($log->from_status !== $log->to_status) → {{ \App\Models\Paper::STATUS_LABELS[$log->to_status] ?? $log->to_status }} @endif
+                                    </p>
+                                    @endif
+                                    @if($log->notes)<p class="text-xs text-gray-600 mt-0.5">{{ $log->notes }}</p>@endif
+                                    <p class="text-[10px] text-gray-400 mt-0.5">oleh {{ $log->user?->name ?? 'System' }}</p>
+                                </div>
+                                <span class="text-[10px] text-gray-400 whitespace-nowrap">{{ $log->occurred_at?->format('d M Y H:i') }}</span>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
                 @endif
 
             </div>

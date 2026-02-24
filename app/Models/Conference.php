@@ -21,15 +21,22 @@ class Conference extends Model
         'visible_sections', 'hidden_speaker_types',
         'wa_group_pemakalah', 'wa_group_non_pemakalah', 'wa_group_reviewer', 'wa_group_editor',
         'read_more_url', 'certificate_template', 'certificate_enabled',
+        'blind_review', 'submission_locked', 'page_builder_blocks',
+        'ojs_url', 'ojs_api_key', 'ojs_journal_id', 'doi_prefix',
+        'meeting_default_platform', 'meeting_default_link', 'submission_extra_fields',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'is_active' => 'boolean',
-        'payment_methods' => 'array',
-        'visible_sections' => 'array',
-        'hidden_speaker_types' => 'array',
+        'is_active'               => 'boolean',
+        'blind_review'            => 'boolean',
+        'submission_locked'       => 'boolean',
+        'payment_methods'         => 'array',
+        'visible_sections'        => 'array',
+        'hidden_speaker_types'    => 'array',
+        'page_builder_blocks'     => 'array',
+        'submission_extra_fields' => 'array',
     ];
 
     /**
@@ -225,6 +232,24 @@ class Conference extends Model
     public function emailTemplates(): HasMany
     {
         return $this->hasMany(EmailTemplate::class);
+    }
+
+    public function reviewRubrics(): HasMany
+    {
+        return $this->hasMany(ReviewRubric::class);
+    }
+
+    public function activeRubric(): ?ReviewRubric
+    {
+        return $this->reviewRubrics()->where('is_active', true)->first();
+    }
+
+    /** Get active submission deadline ImportantDate */
+    public function submissionDeadline(): ?ImportantDate
+    {
+        return $this->importantDates()
+            ->where('type', 'submission_deadline')
+            ->first();
     }
 
     public function scopeActive($query)

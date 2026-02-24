@@ -4,7 +4,13 @@
     <div class="mt-4 mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Review Paper</h1>
         <p class="text-gray-500 text-sm mt-1">{{ $review->paper->title }}</p>
+        @if(!$blindReview)
         <p class="text-gray-400 text-xs mt-1">Penulis: {{ $review->paper->user->name }}</p>
+        @else
+        <p class="text-xs mt-1 inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full font-medium">
+            🕶️ Mode Blind Review — Identitas penulis disembunyikan
+        </p>
+        @endif
     </div>
 
     @if(session('success'))
@@ -24,10 +30,18 @@
                 </div>
                 @endforeach
 
+                    @if(!$blindReview)
                 <div class="mt-4 pt-4 border-t">
                     <h4 class="font-medium text-gray-700 text-sm mb-2">Abstrak</h4>
                     <p class="text-xs text-gray-600 whitespace-pre-line max-h-60 overflow-y-auto">{{ $review->paper->abstract }}</p>
                 </div>
+                    @else
+                <div class="mt-4 pt-4 border-t">
+                    <h4 class="font-medium text-gray-700 text-sm mb-2">Abstrak</h4>
+                    <p class="text-xs text-gray-600 whitespace-pre-line max-h-60 overflow-y-auto">{{ $review->paper->abstract }}</p>
+                    <p class="text-[10px] text-indigo-500 mt-2 italic">* Data identitas penulis tidak ditampilkan (blind review)</p>
+                </div>
+                    @endif
             </div>
         </div>
 
@@ -100,6 +114,52 @@
                         @error('reviewFile') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         @endif
                     </div>
+
+                    {{-- Rubric Scoring --}}
+                    @if($this->rubric)
+                    <div class="border border-purple-200 rounded-xl p-4 bg-purple-50">
+                        <h4 class="font-semibold text-purple-800 mb-1">📊 Rubrik Penilaian: {{ $this->rubric->name }}</h4>
+                        @if($this->rubric->description)
+                        <p class="text-xs text-purple-600 mb-3">{{ $this->rubric->description }}</p>
+                        @endif
+                        <div class="space-y-4">
+                            @foreach($this->rubric->criteria as $criterion)
+                            <div class="bg-white rounded-lg p-3 border border-purple-100">
+                                <div class="flex justify-between items-start mb-1">
+                                    <p class="text-sm font-medium text-gray-800">{{ $criterion->label }}</p>
+                                    <span class="text-xs text-gray-500">Bobot: {{ $criterion->weight }} | Maks: {{ $criterion->max_score }}</span>
+                                </div>
+                                @if($criterion->description)
+                                <p class="text-xs text-gray-500 mb-2">{{ $criterion->description }}</p>
+                                @endif
+                                <div class="flex items-center gap-3">
+                                    <input type="range" wire:model.live="criterionScores.{{ $criterion->id }}"
+                                        min="0" max="{{ $criterion->max_score }}" step="1"
+                                        class="flex-1 accent-purple-600"
+                                        {{ $review->status === 'completed' ? 'disabled' : '' }}>
+                                    <span class="text-sm font-bold text-purple-700 w-8 text-right">
+                                        {{ $criterionScores[$criterion->id] ?? 0 }}
+                                    </span>
+                                </div>
+                                @if($review->status !== 'completed')
+                                <input type="text" wire:model="criterionComments.{{ $criterion->id }}"
+                                    class="mt-2 w-full px-2 py-1 border border-gray-200 rounded text-xs"
+                                    placeholder="Komentar untuk kriteria ini (opsional)">
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+                        @php
+                            $totalWeighted = $this->rubric->criteria->sum(fn($c) => ($criterionScores[$c->id] ?? 0) * $c->weight);
+                            $maxWeighted = $this->rubric->weighted_max;
+                            $rubricPct = $maxWeighted > 0 ? round($totalWeighted / $maxWeighted * 100) : 0;
+                        @endphp
+                        <div class="mt-3 pt-3 border-t border-purple-200 flex items-center justify-between">
+                            <span class="text-sm font-semibold text-purple-800">Skor Tertimbang</span>
+                            <span class="text-lg font-bold {{ $rubricPct >= ($this->rubric->passing_score ?? 60) ? 'text-green-700' : 'text-red-600' }}">{{ $rubricPct }}<span class="text-sm">/100</span></span>
+                        </div>
+                    </div>
+                    @endif
 
                     {{-- Actions --}}
                     @if($review->status !== 'completed')

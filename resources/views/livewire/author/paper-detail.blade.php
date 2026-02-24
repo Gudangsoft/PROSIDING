@@ -307,6 +307,46 @@
             </div>
             @endif
 
+            {{-- Status Timeline --}}
+            @if($paper->statusLogs && $paper->statusLogs->isNotEmpty())
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+                <h3 class="font-semibold text-gray-800 mb-4">📋 Riwayat Status</h3>
+                <div class="relative">
+                    <div class="absolute left-3.5 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                    <div class="space-y-4">
+                        @foreach($paper->statusLogs->sortByDesc('occurred_at') as $log)
+                        @php
+                            $dotColor = match(true) {
+                                str_contains($log->action ?? '', 'reject') => 'bg-red-500',
+                                str_contains($log->action ?? '', 'payment') => 'bg-amber-500',
+                                str_contains($log->action ?? '', 'review') => 'bg-blue-500',
+                                $log->to_status === 'accepted' || $log->to_status === 'completed' => 'bg-green-500',
+                                default => 'bg-indigo-500',
+                            };
+                            $actionLabel = \App\Models\PaperStatusLog::ACTIONS[$log->action] ?? ucwords(str_replace('_', ' ', $log->action ?? ''));
+                        @endphp
+                        <div class="flex gap-4 relative">
+                            <div class="relative z-10 w-7 h-7 rounded-full {{ $dotColor }} flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <div class="w-2 h-2 bg-white rounded-full"></div>
+                            </div>
+                            <div class="flex-1 min-w-0 pb-1">
+                                <p class="text-sm font-semibold text-gray-800">{{ $actionLabel }}</p>
+                                @if($log->from_status && $log->to_status && $log->from_status !== $log->to_status)
+                                <p class="text-xs text-gray-500">
+                                    <span class="font-mono">{{ \App\Models\Paper::STATUS_LABELS[$log->from_status] ?? $log->from_status }}</span>
+                                    → <span class="font-mono">{{ \App\Models\Paper::STATUS_LABELS[$log->to_status] ?? $log->to_status }}</span>
+                                </p>
+                                @endif
+                                @if($log->notes)<p class="text-xs text-gray-600 mt-0.5">{{ $log->notes }}</p>@endif
+                                <p class="text-[10px] text-gray-400 mt-0.5">{{ $log->occurred_at?->format('d M Y H:i') }}</p>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- Quick Actions --}}
             <div class="bg-white rounded-xl shadow-sm border p-6">
                 <h3 class="font-semibold text-gray-800 mb-3">Aksi</h3>

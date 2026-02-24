@@ -240,6 +240,26 @@
                     <option value="archived">Diarsipkan</option>
                 </select>
             </div>
+            {{-- Review & Submission Settings --}}
+            <div class="md:col-span-2 border-t pt-4 mt-2">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">⚙️ Pengaturan Review & Submission</h4>
+                <div class="space-y-3">
+                    <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input wire:model="blind_review" type="checkbox" class="mt-0.5 w-4 h-4 text-indigo-600 rounded">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">Blind Review Mode</p>
+                            <p class="text-xs text-gray-500">Reviewer tidak melihat identitas penulis saat melakukan review</p>
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input wire:model="submission_locked" type="checkbox" class="mt-0.5 w-4 h-4 text-red-600 rounded">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">Kunci Submission Baru</p>
+                            <p class="text-xs text-gray-500">Mencegah author baru mengirim paper ke konferensi ini</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
         </div>
     </div>
     @endif

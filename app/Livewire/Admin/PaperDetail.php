@@ -10,6 +10,7 @@ use App\Models\Deliverable;
 use App\Models\Discussion;
 use App\Models\DiscussionMessage;
 use App\Models\PaperFile;
+use App\Models\PaperStatusLog;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Mail\PaymentVerifiedMail;
@@ -79,6 +80,11 @@ class PaperDetail extends Component
     public string $plagiarismTool = '';
     public string $plagiarismNote = '';
 
+    // Meeting
+    public string $meetingPlatform = '';
+    public string $meetingLink = '';
+    public string $meetingScheduledAt = '';
+
     public function mount(Paper $paper)
     {
         $this->paper = $paper;
@@ -88,6 +94,9 @@ class PaperDetail extends Component
         $this->plagiarismScore = (string) ($paper->similarity_score ?? '');
         $this->plagiarismTool  = $paper->plagiarism_tool ?? '';
         $this->plagiarismNote  = $paper->plagiarism_note ?? '';
+        $this->meetingPlatform = $paper->meeting_platform ?? '';
+        $this->meetingLink     = $paper->meeting_link ?? '';
+        $this->meetingScheduledAt = $paper->meeting_scheduled_at ? $paper->meeting_scheduled_at->format('Y-m-d\TH:i') : '';
 
         // Load conference packages for the accept-modal dropdown
         if ($paper->conference) {
@@ -503,6 +512,7 @@ class PaperDetail extends Component
 
     public function updateStatus()
     {
+        $oldStatus = $this->paper->status;
         $this->paper->update([
             'status' => $this->newStatus,
             'editor_notes' => $this->editorNotes,
@@ -511,6 +521,8 @@ class PaperDetail extends Component
         if ($this->newStatus === 'accepted') {
             $this->paper->update(['accepted_at' => now()]);
         }
+
+        PaperStatusLog::log($this->paper->id, $oldStatus, $this->newStatus, 'status_changed', $this->editorNotes);
 
         $this->paper->refresh();
         session()->flash('success', 'Status paper berhasil diperbarui!');
@@ -872,6 +884,16 @@ class PaperDetail extends Component
         ]);
 
         $this->dispatch('notify', type: 'success', message: 'Data plagiarisme disimpan.');
+    }
+
+    public function saveMeetingInfo(): void
+    {
+        $this->paper->update([
+            'meeting_platform'     => $this->meetingPlatform ?: null,
+            'meeting_link'         => $this->meetingLink ?: null,
+            'meeting_scheduled_at' => $this->meetingScheduledAt ?: null,
+        ]);
+        $this->dispatch('notify', type: 'success', message: 'Info meeting disimpan.');
     }
 
     public function render()

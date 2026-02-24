@@ -16,13 +16,23 @@ class Paper extends Model
         'user_id', 'conference_id', 'assigned_editor_id', 'title', 'abstract', 'keywords', 'topic',
         'authors_meta', 'status', 'editor_notes', 'loa_link', 'loa_number', 'article_link', 'submitted_at', 'accepted_at',
         'similarity_score', 'plagiarism_tool', 'plagiarism_note', 'plagiarism_checked_at',
+        'doi', 'ojs_submission_id', 'ojs_status', 'ojs_submitted_at',
+        'meeting_link', 'meeting_platform', 'meeting_scheduled_at',
+        'extra_field_values', 'similarity_cross_score',
+        'camera_ready_path', 'camera_ready_submitted_at', 'camera_ready_status', 'camera_ready_notes',
+        'acceptance_letter_path', 'acceptance_letter_sent_at',
     ];
 
     protected $casts = [
-        'authors_meta' => 'array',
+        'authors_meta'        => 'array',
+        'extra_field_values'  => 'array',
         'submitted_at'          => 'datetime',
         'accepted_at'           => 'datetime',
         'plagiarism_checked_at' => 'datetime',
+        'ojs_submitted_at'      => 'datetime',
+        'meeting_scheduled_at'         => 'datetime',
+        'camera_ready_submitted_at'   => 'datetime',
+        'acceptance_letter_sent_at'   => 'datetime',
     ];
 
     const STATUS_LABELS = [
@@ -108,5 +118,25 @@ class Paper extends Model
     public function latestFullPaper()
     {
         return $this->files()->whereIn('type', ['full_paper', 'revision'])->latest()->first();
+    }
+
+    public function statusLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PaperStatusLog::class)->orderBy('occurred_at');
+    }
+
+    public function similarities(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PaperSimilarity::class);
+    }
+
+    public function revisionRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RevisionRequest::class)->latest();
+    }
+
+    public function latestRevisionRequest(): ?RevisionRequest
+    {
+        return $this->revisionRequests()->first();
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Paper;
 use App\Models\User;
 use App\Models\Review;
 use App\Models\Payment;
+use App\Models\PaperStatusLog;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
@@ -19,14 +20,114 @@ class PaperManagement extends Component
     public string $statusFilter = '';
     public bool $showFilters = false;
 
+    // Bulk actions
+    public array $selectedPapers = [];
+    public bool $selectAll = false;
+    public string $bulkAction = '';
+    public string $bulkTargetStatus = '';
+    public string $bulkReviewerId = '';
+    public bool $showBulkModal = false;
+
     // Assign editor
     public bool $showAssignEditorModal = false;
     public ?int $assigningPaperId = null;
     public string $selectedEditorId = '';
 
-    public function updatingSearch() { $this->resetPage(); }
-    public function updatingActiveTab() { $this->resetPage(); $this->statusFilter = ''; }
-    public function updatingStatusFilter() { $this->resetPage(); }
+    public function updatingSearch() { $this->resetPage(); $this->selectedPapers = []; }
+    public function updatingActiveTab() { $this->resetPage(); $this->statusFilter = ''; $this->selectedPapers = []; }
+    public function updatingStatusFilter() { $this->resetPage(); $this->selectedPapers = []; }
+
+    public function updatedSelectAll(bool $value): void
+    {
+        // Select IDs from current page
+        $ids = $this->getCurrentPageIds();
+        $this->selectedPapers = $value ? $ids : [];
+    }
+
+    protected function getCurrentPageIds(): array
+    {
+        // Re-run query to get current page IDs
+        return Paper::when($this->search, fn($q) => $q->where('title', 'like', "%{$this->search}%"))
+            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
+            ->when($this->activeTab === 'unassigned', fn($q) => $q->whereNull('assigned_editor_id')->whereNotIn('status', ['rejected', 'completed']))
+            ->when($this->activeTab === 'all_active', fn($q) => $q->whereNotIn('status', ['rejected', 'completed']))
+            ->when($this->activeTab === 'archives', fn($q) => $q->whereIn('status', ['rejected', 'completed']))
+            ->latest()
+            ->paginate(20)
+            ->pluck('id')
+            ->map(fn($id) => (string)$id)
+            ->toArray();
+    }
+
+    public function openBulkAction(): void
+    {
+        if (empty($this->selectedPapers)) {
+            session()->flash('error', 'Pilih minimal 1 paper terlebih dahulu.');
+            return;
+        }
+        $this->showBulkModal = true;
+    }
+
+    public function executeBulkAction(): void
+    {
+        if (empty($this->selectedPapers)) return;
+
+        $ids = array_map('intval', $this->selectedPapers);
+        $papers = Paper::whereIn('id', $ids)->get();
+
+        match ($this->bulkAction) {
+            'change_status' => $this->bulkChangeStatus($papers),
+            'assign_reviewer' => $this->bulkAssignReviewer($papers),
+            default => null,
+        };
+
+        $this->showBulkModal = false;
+        $this->selectedPapers = [];
+        $this->selectAll = false;
+        $this->bulkAction = '';
+        $this->bulkTargetStatus = '';
+        $this->bulkReviewerId = '';
+    }
+
+    protected function bulkChangeStatus($papers): void
+    {
+        if (!$this->bulkTargetStatus) {
+            session()->flash('error', 'Pilih status tujuan.'); return;
+        }
+        $count = 0;
+        foreach ($papers as $paper) {
+            $old = $paper->status;
+            $paper->update(['status' => $this->bulkTargetStatus]);
+            PaperStatusLog::log($paper->id, $old, $this->bulkTargetStatus, 'status_changed', 'Bulk action oleh admin');
+            $count++;
+        }
+        session()->flash('success', "{$count} paper berhasil diubah ke status: " . Paper::STATUS_LABELS[$this->bulkTargetStatus] ?? $this->bulkTargetStatus);
+    }
+
+    protected function bulkAssignReviewer($papers): void
+    {
+        if (!$this->bulkReviewerId) {
+            session()->flash('error', 'Pilih reviewer.'); return;
+        }
+        $reviewer = User::findOrFail($this->bulkReviewerId);
+        $count = 0;
+        foreach ($papers as $paper) {
+            // Only assign if no pending review exists for this reviewer
+            $exists = Review::where('paper_id', $paper->id)
+                ->where('reviewer_id', $reviewer->id)
+                ->exists();
+            if (!$exists) {
+                Review::create([
+                    'paper_id'    => $paper->id,
+                    'reviewer_id' => $reviewer->id,
+                    'assigned_by' => Auth::id(),
+                    'status'      => 'pending',
+                ]);
+                $count++;
+            }
+        }
+        session()->flash('success', "Reviewer {$reviewer->name} ditugaskan ke {$count} paper baru.");
+    }
 
     public function mount()
     {
