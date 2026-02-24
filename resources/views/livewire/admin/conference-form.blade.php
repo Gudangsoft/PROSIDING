@@ -141,6 +141,26 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Link / URL Online</label>
                 <input wire:model="online_url" type="url" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="https://zoom.us/meeting/...">
+                <p class="mt-1.5 text-xs text-gray-500">Isi dengan link meeting online yang akan digunakan, misalnya:</p>
+                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-100 text-[11px] text-blue-600 font-medium">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4zM3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+                        Zoom Meeting
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-50 border border-green-100 text-[11px] text-green-700 font-medium">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4zM3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+                        Google Meet
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 border border-purple-100 text-[11px] text-purple-700 font-medium">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4zM3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+                        MS Teams
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-50 border border-red-100 text-[11px] text-red-600 font-medium">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4zM3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+                        YouTube Live / Webex
+                    </span>
+                </div>
+                @error('online_url') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
             </div>
             @endif
             <div>
