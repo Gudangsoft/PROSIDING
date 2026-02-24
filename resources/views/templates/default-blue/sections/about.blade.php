@@ -26,13 +26,28 @@
 
                     {{-- Topics --}}
                     @if($activeConference->topics->count())
-                    <div class="mt-6">
-                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider mb-3">{{ __('welcome.conference.topik_bidang') }}</h3>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($activeConference->topics->sortBy('sort_order') as $topic)
-                            <span class="inline-flex items-center bg-blue-50 text-blue-700 text-sm font-medium px-3 py-1.5 rounded-lg border border-blue-200">
-                                {{ $topic->name }}
-                            </span>
+                    <div class="mt-8">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-1 h-5 bg-blue-600 rounded-full"></div>
+                            <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">{{ __('welcome.conference.topik_bidang') }}</h3>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            @foreach($activeConference->topics->sortBy('sort_order') as $index => $topic)
+                            @php
+                                $colors = [
+                                    ['bg' => 'bg-blue-50',   'border' => 'border-blue-200',   'text' => 'text-blue-700',   'dot' => 'bg-blue-500'],
+                                    ['bg' => 'bg-indigo-50', 'border' => 'border-indigo-200', 'text' => 'text-indigo-700', 'dot' => 'bg-indigo-500'],
+                                    ['bg' => 'bg-violet-50', 'border' => 'border-violet-200', 'text' => 'text-violet-700', 'dot' => 'bg-violet-500'],
+                                    ['bg' => 'bg-sky-50',    'border' => 'border-sky-200',    'text' => 'text-sky-700',    'dot' => 'bg-sky-500'],
+                                    ['bg' => 'bg-teal-50',   'border' => 'border-teal-200',   'text' => 'text-teal-700',   'dot' => 'bg-teal-500'],
+                                    ['bg' => 'bg-cyan-50',   'border' => 'border-cyan-200',   'text' => 'text-cyan-700',   'dot' => 'bg-cyan-500'],
+                                ];
+                                $c = $colors[$index % count($colors)];
+                            @endphp
+                            <div class="flex items-start gap-2.5 px-3 py-2.5 rounded-xl border {{ $c['bg'] }} {{ $c['border'] }} group hover:shadow-sm transition-shadow duration-200">
+                                <span class="mt-1 w-2 h-2 rounded-full shrink-0 {{ $c['dot'] }}"></span>
+                                <span class="text-sm font-medium leading-snug {{ $c['text'] }}">{{ $topic->name }}</span>
+                            </div>
                             @endforeach
                         </div>
                     </div>
@@ -139,11 +154,30 @@
                         </div>
                         @endif
 
-                        <div class="pt-2">
+                        <div class="pt-2 flex flex-col gap-2.5">
+                            @if($activeConference->read_more_url)
+                            <a href="{{ $activeConference->read_more_url }}" target="_blank" rel="noopener"
+                               class="flex items-center justify-center gap-2 w-full border-2 border-blue-600 text-blue-600 text-center py-3 rounded-xl font-semibold hover:bg-blue-50 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                                </svg>
+                                Selengkapnya
+                            </a>
+                            @endif
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="block w-full bg-blue-600 text-white text-center py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow">Submit Paper</a>
+                                <a href="{{ url('/dashboard') }}" class="flex items-center justify-center gap-2 w-full bg-blue-600 text-white text-center py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.338-2.32 3.75 3.75 0 0 1 3.827 3.785h.004a3 3 0 0 1-2.497 2.972"/>
+                                    </svg>
+                                    Submit Paper
+                                </a>
                             @else
-                                <a href="{{ route('register') }}" class="block w-full bg-blue-600 text-white text-center py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow">Submit Paper</a>
+                                <a href="{{ route('register') }}" class="flex items-center justify-center gap-2 w-full bg-blue-600 text-white text-center py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.338-2.32 3.75 3.75 0 0 1 3.827 3.785h.004a3 3 0 0 1-2.497 2.972"/>
+                                    </svg>
+                                    Submit Paper
+                                </a>
                             @endauth
                         </div>
                     </div>
