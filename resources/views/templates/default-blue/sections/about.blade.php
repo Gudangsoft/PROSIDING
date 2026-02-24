@@ -31,7 +31,7 @@
                             <div class="w-1 h-5 bg-blue-600 rounded-full"></div>
                             <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">{{ __('welcome.conference.topik_bidang') }}</h3>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div class="flex flex-wrap gap-2">
                             @foreach($activeConference->topics->sortBy('sort_order') as $index => $topic)
                             @php
                                 $colors = [
@@ -44,10 +44,10 @@
                                 ];
                                 $c = $colors[$index % count($colors)];
                             @endphp
-                            <div class="flex items-start gap-2.5 px-3 py-2.5 rounded-xl border {{ $c['bg'] }} {{ $c['border'] }} group hover:shadow-sm transition-shadow duration-200">
-                                <span class="mt-1 w-2 h-2 rounded-full shrink-0 {{ $c['dot'] }}"></span>
-                                <span class="text-sm font-medium leading-snug {{ $c['text'] }}">{{ $topic->name }}</span>
-                            </div>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-medium {{ $c['bg'] }} {{ $c['border'] }} {{ $c['text'] }} hover:shadow-sm transition-shadow duration-200">
+                                <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ $c['dot'] }}"></span>
+                                {{ $topic->name }}
+                            </span>
                             @endforeach
                         </div>
                     </div>
