@@ -16,7 +16,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'photo', 'email', 'password', 'role', 'gender', 'institution', 'country',
         'participation', 'research_interest', 'phone', 'other_info',
-        'proof_of_payment', 'signature',
+        'proof_of_payment', 'signature', 'reviewer_topics', 'max_review_load',
     ];
 
     protected $hidden = [
@@ -27,8 +27,9 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'  => 'datetime',
+            'password'           => 'hashed',
+            'reviewer_topics'    => 'array',
         ];
     }
 

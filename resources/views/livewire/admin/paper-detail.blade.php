@@ -354,6 +354,53 @@
                         </div>
                     </div>
 
+                    {{-- ──── Plagiarism Check Section ──── --}}
+                    <div class="border border-orange-200 rounded mt-5">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-orange-100 bg-orange-50">
+                            <h3 class="text-sm font-bold text-orange-800">🔍 Pemeriksaan Plagiarisme</h3>
+                            @if($paper->plagiarism_checked_at)
+                            <span class="text-xs text-orange-500">Terakhir diperiksa: {{ $paper->plagiarism_checked_at->format('d M Y H:i') }}</span>
+                            @endif
+                        </div>
+                        <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Skor Kemiripan (%)</label>
+                                <input wire:model="plagiarismScore" type="number" min="0" max="100" step="0.01" placeholder="e.g. 12.5"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm {{ $paper->similarity_score > 30 ? 'border-red-400 bg-red-50' : '' }}">
+                                @if($paper->similarity_score !== null)
+                                <p class="mt-1 text-xs {{ $paper->similarity_score > 30 ? 'text-red-600 font-semibold' : 'text-green-600' }}">
+                                    Skor saat ini: {{ $paper->similarity_score }}%
+                                    {{ $paper->similarity_score > 30 ? '⚠ Di atas batas' : '✓ Di bawah batas' }}
+                                </p>
+                                @endif
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Tool yang Digunakan</label>
+                                <select wire:model="plagiarismTool" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                                    <option value="">-- Pilih Tool --</option>
+                                    <option value="Turnitin">Turnitin</option>
+                                    <option value="iThenticate">iThenticate</option>
+                                    <option value="Grammarly">Grammarly</option>
+                                    <option value="PlagScan">PlagScan</option>
+                                    <option value="Unicheck">Unicheck</option>
+                                    <option value="Manual">Manual / Lainnya</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Catatan</label>
+                                <textarea wire:model="plagiarismNote" rows="2" placeholder="Catatan hasil pemeriksaan..."
+                                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm resize-none"></textarea>
+                            </div>
+                            <div class="md:col-span-3 flex justify-end">
+                                <button wire:click="savePlagiarism" type="button"
+                                    class="px-4 py-2 bg-orange-600 text-white rounded text-sm font-medium hover:bg-orange-700 cursor-pointer">
+                                    <span wire:loading.remove wire:target="savePlagiarism">Simpan Data Plagiarisme</span>
+                                    <span wire:loading wire:target="savePlagiarism">Menyimpan...</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 {{-- ──── COPYEDITING TAB ──── --}}
                 @elseif($workflowTab === 'copyediting')
                     <div class="border border-gray-200 rounded mb-5">

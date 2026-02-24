@@ -376,6 +376,22 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Research Interest</label>
                     <input wire:model="userResearchInterest" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
+                @if($userRole === 'reviewer')
+                <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-lg space-y-3">
+                    <p class="text-xs font-semibold text-indigo-700 uppercase tracking-wide">⚙ Konfigurasi Reviewer</p>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Topik Keahlian <span class="text-gray-400 text-xs">(pisahkan dengan koma)</span></label>
+                        <input wire:model="userReviewerTopics" type="text" placeholder="e.g. Machine Learning, NLP, Computer Vision"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <p class="text-xs text-gray-400 mt-1">Digunakan untuk auto-assign reviewer berdasarkan topik paper.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Maks. Review Bersamaan</label>
+                        <input wire:model="userMaxReviewLoad" type="number" min="1" max="20" placeholder="5"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+                @endif
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Informasi Lainnya</label>
                     <textarea wire:model="userOtherInfo" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>

@@ -15,12 +15,14 @@ class Paper extends Model
     protected $fillable = [
         'user_id', 'conference_id', 'assigned_editor_id', 'title', 'abstract', 'keywords', 'topic',
         'authors_meta', 'status', 'editor_notes', 'loa_link', 'loa_number', 'article_link', 'submitted_at', 'accepted_at',
+        'similarity_score', 'plagiarism_tool', 'plagiarism_note', 'plagiarism_checked_at',
     ];
 
     protected $casts = [
         'authors_meta' => 'array',
-        'submitted_at' => 'datetime',
-        'accepted_at' => 'datetime',
+        'submitted_at'          => 'datetime',
+        'accepted_at'           => 'datetime',
+        'plagiarism_checked_at' => 'datetime',
     ];
 
     const STATUS_LABELS = [

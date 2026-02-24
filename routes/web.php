@@ -30,6 +30,15 @@ use App\Livewire\Admin\PageForm;
 use App\Livewire\Admin\EmailTemplateManager;
 use App\Http\Controllers\Admin\PaymentExportController;
 use App\Http\Controllers\Admin\DatabaseExportController;
+use App\Http\Controllers\Admin\ReportExportController;
+use App\Livewire\Author\AbstractList as AuthorAbstractList;
+use App\Livewire\Author\SubmitAbstract;
+use App\Livewire\Admin\AbstractManagement;
+use App\Livewire\Admin\CertificateManager;
+use App\Livewire\Admin\BroadcastEmailManager;
+use App\Livewire\Admin\DashboardStats;
+use App\Livewire\Admin\ReportsManager;
+use App\Livewire\Admin\AutoReviewerAssign;
 use App\Livewire\Admin\DatabaseManager;
 use App\Livewire\Reviewer\ReviewList;
 use App\Livewire\Reviewer\ReviewForm;
@@ -105,6 +114,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/papers/{paper}/payment', PaymentUpload::class)->name('author.paper.payment');
         Route::get('/papers/{paper}/deliverables', DeliverableUpload::class)->name('author.paper.deliverables');
         Route::get('/loa', LoaList::class)->name('author.loa');
+        Route::get('/abstracts', AuthorAbstractList::class)->name('author.abstracts');
+        Route::get('/abstracts/create', SubmitAbstract::class)->name('author.abstract.create');
+        Route::get('/abstracts/{id}/edit', SubmitAbstract::class)->name('author.abstract.edit');
     });
 
     // ─── Reviewer Routes ───
@@ -120,6 +132,19 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/payments', PaymentList::class)->name('admin.payments');
         Route::get('/payments/export', [PaymentExportController::class, 'export'])->name('admin.payments.export');
         Route::get('/materials', \App\Livewire\Admin\MaterialManager::class)->name('admin.materials');
+
+        // New Feature Routes
+        Route::get('/abstracts', AbstractManagement::class)->name('admin.abstracts');
+        Route::get('/certificates', CertificateManager::class)->name('admin.certificates');
+        Route::get('/broadcast-email', BroadcastEmailManager::class)->name('admin.broadcast');
+        Route::get('/statistics', DashboardStats::class)->name('admin.stats');
+        Route::get('/reports', ReportsManager::class)->name('admin.reports');
+        Route::get('/auto-reviewer', AutoReviewerAssign::class)->name('admin.auto-reviewer');
+
+        // Export Routes
+        Route::get('/reports/participants', [ReportExportController::class, 'participants'])->name('admin.reports.participants');
+        Route::get('/reports/papers', [ReportExportController::class, 'papers'])->name('admin.reports.papers');
+        Route::get('/reports/revenue', [ReportExportController::class, 'revenue'])->name('admin.reports.revenue');
 
         // Kegiatan Prosiding
         Route::get('/conferences', ConferenceList::class)->name('admin.conferences');
@@ -194,6 +219,9 @@ Route::middleware(['auth'])->group(function () {
         // Database Manager (Backup & Restore)
         Route::get('/database', DatabaseManager::class)->name('admin.database');
         Route::get('/database/export', [DatabaseExportController::class, 'export'])->name('admin.database.export');
+
+        // WhatsApp Notification Manager
+        Route::get('/whatsapp', \App\Livewire\Admin\WhatsappManager::class)->name('admin.whatsapp');
 
         // Impersonate User
         Route::post('/impersonate/{user}', function (\App\Models\User $user) {

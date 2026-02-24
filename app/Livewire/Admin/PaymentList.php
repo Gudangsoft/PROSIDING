@@ -116,6 +116,22 @@ class PaymentList extends Component
             \Log::error('PaymentVerifiedMail gagal: ' . $e->getMessage());
         }
 
+        // WhatsApp notification for payment verified
+        try {
+            $user = $payment->user;
+            if ($user?->phone) {
+                $svc = new \App\Services\WhatsappService();
+                $svc->sendTemplate('tpl_payment_verified', $user->phone, [
+                    'nama'        => $user->name,
+                    'judul_paper' => $payment->paper?->title ?? '',
+                    'konferensi'  => $payment->paper?->conference?->name ?? $payment->registrationPackage?->conference?->name ?? '',
+                    'invoice'     => $payment->invoice_number,
+                ], 'payment_verified', $user->id, $payment->paper_id, $user->name);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('WA payment verified notif gagal: ' . $e->getMessage());
+        }
+
         session()->flash('success', 'Pembayaran ' . $payment->invoice_number . ' → Lunas! Email notifikasi terkirim.');
     }
 

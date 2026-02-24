@@ -34,6 +34,8 @@ class UsersRoles extends Component
     public string $userCountry = '';
     public string $userResearchInterest = '';
     public string $userOtherInfo = '';
+    public string $userReviewerTopics = '';
+    public int $userMaxReviewLoad = 5;
     public array $userRoles = [];
 
     // ─── Assign Role Modal ───
@@ -115,6 +117,8 @@ class UsersRoles extends Component
         $this->userCountry = $user->country ?? '';
         $this->userResearchInterest = $user->research_interest ?? '';
         $this->userOtherInfo = $user->other_info ?? '';
+        $this->userReviewerTopics = is_array($user->reviewer_topics) ? implode(', ', $user->reviewer_topics) : ($user->reviewer_topics ?? '');
+        $this->userMaxReviewLoad = $user->max_review_load ?? 5;
         $this->editingUser = true;
         $this->showUserModal = true;
     }
@@ -143,6 +147,10 @@ class UsersRoles extends Component
             'country'           => $this->userCountry ?: null,
             'research_interest' => $this->userResearchInterest ?: null,
             'other_info'        => $this->userOtherInfo ?: null,
+            'reviewer_topics'   => $this->userRole === 'reviewer' && $this->userReviewerTopics
+                                    ? array_map('trim', explode(',', $this->userReviewerTopics))
+                                    : null,
+            'max_review_load'   => $this->userRole === 'reviewer' ? ($this->userMaxReviewLoad ?: 5) : 5,
         ];
 
         if ($this->userPassword) {
@@ -199,6 +207,8 @@ class UsersRoles extends Component
         $this->userCountry = '';
         $this->userResearchInterest = '';
         $this->userOtherInfo = '';
+        $this->userReviewerTopics = '';
+        $this->userMaxReviewLoad = 5;
     }
 
     // ════════════════════════════════════════

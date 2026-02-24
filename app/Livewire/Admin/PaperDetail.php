@@ -74,12 +74,20 @@ class PaperDetail extends Component
     public bool $showPublishModal = false;
     public string $publishArticleLink = '';
 
+    // Plagiarism
+    public string $plagiarismScore = '';
+    public string $plagiarismTool = '';
+    public string $plagiarismNote = '';
+
     public function mount(Paper $paper)
     {
         $this->paper = $paper;
         $this->editorNotes = $paper->editor_notes ?? '';
         $this->newStatus = $paper->status;
         $this->publishArticleLink = $paper->article_link ?? '';
+        $this->plagiarismScore = (string) ($paper->similarity_score ?? '');
+        $this->plagiarismTool  = $paper->plagiarism_tool ?? '';
+        $this->plagiarismNote  = $paper->plagiarism_note ?? '';
 
         // Load conference packages for the accept-modal dropdown
         if ($paper->conference) {
@@ -506,6 +514,30 @@ class PaperDetail extends Component
 
         $this->paper->refresh();
         session()->flash('success', 'Status paper berhasil diperbarui!');
+
+        // WhatsApp notification for paper status change
+        try {
+            $user = $this->paper->user;
+            if ($user?->phone) {
+                $svc = new \App\Services\WhatsappService();
+                $vars = [
+                    'nama'        => $user->name,
+                    'judul_paper' => $this->paper->title,
+                    'konferensi'  => $this->paper->conference?->name ?? '',
+                    'catatan'     => $this->editorNotes ?? '',
+                ];
+                $tplMap = [
+                    'accepted'          => 'tpl_paper_accepted',
+                    'rejected'          => 'tpl_paper_rejected',
+                    'revision_required' => 'tpl_paper_revision',
+                ];
+                if (isset($tplMap[$this->newStatus])) {
+                    $svc->sendTemplate($tplMap[$this->newStatus], $user->phone, $vars, 'paper_status', $user->id, $this->paper->id, $user->name);
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('WA paper status notif gagal: ' . $e->getMessage());
+        }
     }
 
     // ─── Production Stage Actions ───
@@ -599,6 +631,22 @@ class PaperDetail extends Component
                 ));
             } catch (\Exception $e) {
                 \Log::error('PaymentVerifiedMail gagal: ' . $e->getMessage());
+            }
+
+            // WhatsApp notification for payment verified
+            try {
+                $user = $this->paper->user;
+                if ($user?->phone) {
+                    $svc = new \App\Services\WhatsappService();
+                    $svc->sendTemplate('tpl_payment_verified', $user->phone, [
+                        'nama'        => $user->name,
+                        'judul_paper' => $this->paper->title,
+                        'konferensi'  => $this->paper->conference?->name ?? '',
+                        'invoice'     => $payment->invoice_number,
+                    ], 'payment_verified', $user->id, $this->paper->id, $user->name);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('WA payment verified notif gagal: ' . $e->getMessage());
             }
 
             session()->flash('success', 'Pembayaran → Lunas! Email notifikasi terkirim.');
@@ -806,6 +854,24 @@ class PaperDetail extends Component
             'rejected' => 'declined',
             default => 'submission',
         };
+    }
+
+    public function savePlagiarism()
+    {
+        $this->validate([
+            'plagiarismScore' => 'nullable|numeric|min:0|max:100',
+            'plagiarismTool'  => 'nullable|string|max:100',
+            'plagiarismNote'  => 'nullable|string|max:2000',
+        ]);
+
+        $this->paper->update([
+            'similarity_score'       => $this->plagiarismScore !== '' ? (float) $this->plagiarismScore : null,
+            'plagiarism_tool'        => $this->plagiarismTool ?: null,
+            'plagiarism_note'        => $this->plagiarismNote ?: null,
+            'plagiarism_checked_at'  => now(),
+        ]);
+
+        $this->dispatch('notify', type: 'success', message: 'Data plagiarisme disimpan.');
     }
 
     public function render()
