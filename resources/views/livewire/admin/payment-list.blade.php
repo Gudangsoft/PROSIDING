@@ -8,26 +8,37 @@
         <div class="bg-green-50 border border-green-200 text-green-700 rounded-lg p-3 mb-4 text-sm">{{ session('success') }}</div>
     @endif
 
-    <div class="flex flex-col sm:flex-row gap-3 mb-4">
-        {{-- Type Tabs --}}
-        <div class="flex border border-gray-200 rounded-lg overflow-hidden text-sm">
-            <button wire:click="$set('typeFilter', '')" class="px-4 py-2 font-medium transition {{ $typeFilter === '' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }} cursor-pointer">
-                Semua ({{ $allCount }})
-            </button>
-            <button wire:click="$set('typeFilter', 'paper')" class="px-4 py-2 font-medium transition border-l border-gray-200 {{ $typeFilter === 'paper' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }} cursor-pointer">
-                Paper ({{ $paperCount }})
-            </button>
-            <button wire:click="$set('typeFilter', 'participant')" class="px-4 py-2 font-medium transition border-l border-gray-200 {{ $typeFilter === 'participant' ? 'bg-teal-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }} cursor-pointer">
-                Partisipan ({{ $participantCount }})
-            </button>
+    <div class="flex flex-col sm:flex-row gap-3 mb-4 items-center justify-between flex-wrap">
+        <div class="flex flex-col sm:flex-row gap-3">
+            {{-- Type Tabs --}}
+            <div class="flex border border-gray-200 rounded-lg overflow-hidden text-sm">
+                <button wire:click="$set('typeFilter', '')" class="px-4 py-2 font-medium transition {{ $typeFilter === '' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }} cursor-pointer">
+                    Semua ({{ $allCount }})
+                </button>
+                <button wire:click="$set('typeFilter', 'paper')" class="px-4 py-2 font-medium transition border-l border-gray-200 {{ $typeFilter === 'paper' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }} cursor-pointer">
+                    Paper ({{ $paperCount }})
+                </button>
+                <button wire:click="$set('typeFilter', 'participant')" class="px-4 py-2 font-medium transition border-l border-gray-200 {{ $typeFilter === 'participant' ? 'bg-teal-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }} cursor-pointer">
+                    Partisipan ({{ $participantCount }})
+                </button>
+            </div>
+            <select wire:model.live="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="">Semua Status</option>
+                <option value="pending">Pending</option>
+                <option value="uploaded">Sudah Upload</option>
+                <option value="verified">Lunas</option>
+                <option value="rejected">Ditolak</option>
+            </select>
         </div>
-        <select wire:model.live="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg text-sm">
-            <option value="">Semua Status</option>
-            <option value="pending">Pending</option>
-            <option value="uploaded">Sudah Upload</option>
-            <option value="verified">Lunas</option>
-            <option value="rejected">Ditolak</option>
-        </select>
+
+        {{-- Export Excel Button --}}
+        <a href="{{ route('admin.payments.export', array_filter(['type' => $typeFilter, 'status' => $statusFilter])) }}"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-sm transition whitespace-nowrap">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Export Excel
+        </a>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border overflow-hidden">

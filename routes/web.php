@@ -28,6 +28,7 @@ use App\Livewire\Admin\UsersRoles;
 use App\Livewire\Admin\PageList;
 use App\Livewire\Admin\PageForm;
 use App\Livewire\Admin\EmailTemplateManager;
+use App\Http\Controllers\Admin\PaymentExportController;
 use App\Livewire\Reviewer\ReviewList;
 use App\Livewire\Reviewer\ReviewForm;
 use App\Livewire\Author\Helpdesk;
@@ -115,6 +116,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/papers', PaperManagement::class)->name('admin.papers');
         Route::get('/papers/{paper}', AdminPaperDetail::class)->name('admin.paper.detail');
         Route::get('/payments', PaymentList::class)->name('admin.payments');
+        Route::get('/payments/export', [PaymentExportController::class, 'export'])->name('admin.payments.export');
         Route::get('/materials', \App\Livewire\Admin\MaterialManager::class)->name('admin.materials');
 
         // Kegiatan Prosiding
