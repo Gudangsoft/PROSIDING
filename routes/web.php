@@ -29,6 +29,8 @@ use App\Livewire\Admin\PageList;
 use App\Livewire\Admin\PageForm;
 use App\Livewire\Admin\EmailTemplateManager;
 use App\Http\Controllers\Admin\PaymentExportController;
+use App\Http\Controllers\Admin\DatabaseExportController;
+use App\Livewire\Admin\DatabaseManager;
 use App\Livewire\Reviewer\ReviewList;
 use App\Livewire\Reviewer\ReviewForm;
 use App\Livewire\Author\Helpdesk;
@@ -188,6 +190,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings/general', GeneralSettings::class)->name('admin.settings.general');
         Route::get('/settings/email', EmailSettings::class)->name('admin.settings.email');
         Route::get('/settings/theme', ThemeSettings::class)->name('admin.settings.theme');
+
+        // Database Manager (Backup & Restore)
+        Route::get('/database', DatabaseManager::class)->name('admin.database');
+        Route::get('/database/export', [DatabaseExportController::class, 'export'])->name('admin.database.export');
 
         // Impersonate User
         Route::post('/impersonate/{user}', function (\App\Models\User $user) {
