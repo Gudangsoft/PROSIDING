@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Role;
 
 class AdminUserSeeder extends Seeder
 {
@@ -48,6 +49,21 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
+        // Create treasurer (bendahara) user
+        $treasurer = User::firstOrCreate(
+            ['email' => 'bendahara@prosiding.test'],
+            [
+                'name' => 'Bendahara Prosiding',
+                'password' => bcrypt('password'),
+                'role' => 'treasurer',
+                'institution' => 'LPKD-APJI',
+                'phone' => '081234567893',
+            ]
+        );
+
+        // Assign roles to users
+        $this->assignRoles($reviewer, $editor, $treasurer);
+
         $this->command->info("\n✅ Admin users created successfully!");
         $this->command->info("\n👤 Admin Login:");
         $this->command->info("   Email: admin@prosiding.test");
@@ -58,5 +74,32 @@ class AdminUserSeeder extends Seeder
         $this->command->info("\n👤 Reviewer Login:");
         $this->command->info("   Email: reviewer@prosiding.test");
         $this->command->info("   Password: password");
+        $this->command->info("\n👤 Bendahara Login:");
+        $this->command->info("   Email: bendahara@prosiding.test");
+        $this->command->info("   Password: password");
+    }
+
+    /**
+     * Assign appropriate roles to users
+     */
+    private function assignRoles($reviewer, $editor, $treasurer): void
+    {
+        // Assign Reviewer role
+        $reviewerRole = Role::where('slug', 'reviewer')->first();
+        if ($reviewerRole && !$reviewer->roles()->where('role_id', $reviewerRole->id)->exists()) {
+            $reviewer->roles()->attach($reviewerRole->id);
+        }
+
+        // Assign Journal Editor role to editor
+        $editorRole = Role::where('slug', 'journal-editor')->first();
+        if ($editorRole && !$editor->roles()->where('role_id', $editorRole->id)->exists()) {
+            $editor->roles()->attach($editorRole->id);
+        }
+
+        // Assign Treasurer role to bendahara
+        $treasurerRole = Role::where('slug', 'treasurer')->first();
+        if ($treasurerRole && !$treasurer->roles()->where('role_id', $treasurerRole->id)->exists()) {
+            $treasurer->roles()->attach($treasurerRole->id);
+        }
     }
 }

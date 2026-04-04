@@ -28,12 +28,28 @@
             @php
                 $colors = ['pending'=>'yellow','approved'=>'green','rejected'=>'red','revision_required'=>'orange'];
                 $c = $colors[$abs->status] ?? 'gray';
+                $payment = $abs->payment;
+                $hasPaper = $abs->paper_id !== null;
             @endphp
             <div class="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-sm transition">
                 <div class="flex items-start justify-between gap-4">
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
                             <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-{{ $c }}-100 text-{{ $c }}-700">{{ $abs->status_label }}</span>
+                            @if($payment)
+                                @if($payment->status === 'verified')
+                                <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">Pembayaran Terverifikasi</span>
+                                @elseif($payment->status === 'uploaded')
+                                <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">Menunggu Verifikasi</span>
+                                @elseif($payment->status === 'pending')
+                                <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">Belum Bayar</span>
+                                @elseif($payment->status === 'rejected')
+                                <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-700">Pembayaran Ditolak</span>
+                                @endif
+                            @endif
+                            @if($hasPaper)
+                            <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">Paper Terkirim</span>
+                            @endif
                             <span class="text-xs text-gray-400">{{ $abs->conference?->name }}</span>
                         </div>
                         <h3 class="font-semibold text-gray-800 text-sm leading-snug">{{ $abs->title }}</h3>
@@ -43,14 +59,39 @@
                             <strong>Catatan Reviewer:</strong> {{ $abs->reviewer_notes }}
                         </div>
                         @endif
+                        
+                        {{-- Payment Info --}}
+                        @if($abs->status === 'approved' && $payment)
+                        <div class="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-gray-500">Invoice: <span class="font-medium text-gray-700">{{ $payment->invoice_number }}</span></p>
+                                    <p class="text-sm font-semibold text-gray-800 mt-0.5">Rp {{ number_format($payment->amount, 0, ',', '.') }}</p>
+                                </div>
+                                @if($payment->status === 'pending' || $payment->status === 'rejected')
+                                <a href="{{ route('author.payments') }}" class="text-blue-600 hover:text-blue-800 text-xs font-medium px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-50 transition">Upload Bukti Bayar</a>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
+                    <div class="flex flex-col items-end gap-2 shrink-0">
                         @if(in_array($abs->status, ['pending', 'revision_required']))
                         <a href="{{ route('author.abstract.edit', $abs->id) }}" class="text-blue-600 hover:text-blue-800 text-xs font-medium px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-50 transition">Edit</a>
                         <button wire:click="delete({{ $abs->id }})" wire:confirm="Yakin hapus abstrak ini?" class="text-red-500 hover:text-red-700 text-xs font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">Hapus</button>
                         @endif
+
                         @if($abs->status === 'approved')
-                        <a href="{{ route('submit.paper') }}" class="text-green-600 hover:text-green-800 text-xs font-medium px-3 py-1.5 rounded-lg border border-green-200 hover:bg-green-50 transition">→ Full Paper</a>
+                            @if(!$hasPaper && $payment && $payment->status === 'verified')
+                            {{-- Can submit paper only after payment is verified --}}
+                            <a href="{{ route('author.submit', ['abstract_id' => $abs->id]) }}" class="text-green-600 hover:text-green-800 text-xs font-medium px-3 py-1.5 rounded-lg border border-green-200 hover:bg-green-50 transition">→ Submit Full Paper</a>
+                            @elseif($hasPaper)
+                            <a href="{{ route('author.papers') }}" class="text-blue-600 hover:text-blue-800 text-xs font-medium px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-50 transition">Lihat Paper</a>
+                            @endif
+                            
+                            @if($payment && $payment->status === 'verified')
+                            <a href="{{ route('author.loa') }}" class="text-emerald-600 hover:text-emerald-800 text-xs font-medium px-3 py-1.5 rounded-lg border border-emerald-200 hover:bg-emerald-50 transition">Lihat LOA</a>
+                            @endif
                         @endif
                     </div>
                 </div>

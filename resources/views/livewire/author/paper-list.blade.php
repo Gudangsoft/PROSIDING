@@ -60,11 +60,17 @@
                     <td class="px-4 py-3 text-gray-500">{{ $paper->submitted_at?->format('d M Y') ?? '-' }}</td>
                     <td class="px-4 py-3">
                         <a href="{{ route('author.paper.detail', $paper) }}" class="text-blue-600 hover:text-blue-800 font-medium text-sm">Detail</a>
+                            @if($paper->conference && $paper->conference->meeting_link)
+                                <a href="{{ $paper->conference->meeting_link }}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium text-sm ml-2">Zoom</a>
+                            @endif
                         @if(in_array($paper->status, ['payment_pending', 'payment_uploaded']))
                             <a href="{{ route('author.paper.payment', $paper) }}" class="text-green-600 hover:text-green-800 font-medium text-sm ml-2">Bayar</a>
                         @endif
                         @if(in_array($paper->status, ['payment_verified', 'deliverables_pending', 'completed']))
                             <a href="{{ route('author.paper.deliverables', $paper) }}" class="text-purple-600 hover:text-purple-800 font-medium text-sm ml-2">Luaran</a>
+                        @endif
+                        @if($paper->certificate)
+                            <a href="{{ route('author.certificate.download', $paper) }}" class="text-teal-600 hover:text-teal-800 font-medium text-sm ml-2">Sertifikat</a>
                         @endif
                     </td>
                 </tr>

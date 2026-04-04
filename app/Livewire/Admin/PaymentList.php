@@ -75,13 +75,17 @@ class PaymentList extends Component
         }
 
         // Notify user
-        $message = $payment->type === 'participant'
-            ? 'Pembayaran registrasi Anda telah diverifikasi (Lunas).'
-            : 'Pembayaran Anda (' . $payment->invoice_number . ') sebesar Rp ' . number_format($payment->amount, 0, ',', '.') . ' telah diverifikasi (Lunas).';
+        $message = match($payment->type) {
+            'participant' => 'Pembayaran registrasi Anda telah diverifikasi (Lunas).',
+            'abstract' => 'Pembayaran abstrak Anda (' . $payment->invoice_number . ') sebesar Rp ' . number_format($payment->amount, 0, ',', '.') . ' telah diverifikasi. Anda sekarang bisa submit full paper dan download LOA.',
+            default => 'Pembayaran Anda (' . $payment->invoice_number . ') sebesar Rp ' . number_format($payment->amount, 0, ',', '.') . ' telah diverifikasi (Lunas).',
+        };
 
-        $actionUrl = $payment->type === 'participant'
-            ? route('dashboard')
-            : route('author.paper.detail', $payment->paper);
+        $actionUrl = match($payment->type) {
+            'participant' => route('dashboard'),
+            'abstract' => route('author.abstracts'),
+            default => route('author.paper.detail', $payment->paper),
+        };
 
         \App\Models\Notification::createForUser(
             $payment->user_id,
@@ -94,20 +98,25 @@ class PaymentList extends Component
 
         // Kirim email notifikasi ke user
         try {
-            $conferenceId = $payment->registrationPackage?->conference_id ?? $payment->paper?->conference_id;
+            $conferenceId = $payment->registrationPackage?->conference_id 
+                ?? $payment->paper?->conference_id 
+                ?? $payment->abstract?->conference_id;
             $conference = $conferenceId ? \App\Models\Conference::find($conferenceId) : null;
             $waGroupLink = null;
             if ($conference) {
-                $waGroupLink = $payment->type === 'paper'
+                $waGroupLink = ($payment->type === 'paper' || $payment->type === 'abstract')
                     ? $conference->wa_group_pemakalah
                     : $conference->wa_group_non_pemakalah;
             }
+            
+            $paperTitle = $payment->paper?->title ?? $payment->abstract?->title;
+            
             Mail::to($payment->user->email)->send(new PaymentVerifiedMail(
                 $payment->user->name,
                 $payment->invoice_number,
                 $payment->amount,
                 $payment->type,
-                $payment->paper?->title,
+                $paperTitle,
                 $actionUrl,
                 $conferenceId,
                 $waGroupLink
@@ -123,8 +132,8 @@ class PaymentList extends Component
                 $svc = new \App\Services\WhatsappService();
                 $svc->sendTemplate('tpl_payment_verified', $user->phone, [
                     'nama'        => $user->name,
-                    'judul_paper' => $payment->paper?->title ?? '',
-                    'konferensi'  => $payment->paper?->conference?->name ?? $payment->registrationPackage?->conference?->name ?? '',
+                    'judul_paper' => $payment->paper?->title ?? $payment->abstract?->title ?? '',
+                    'konferensi'  => $payment->paper?->conference?->name ?? $payment->abstract?->conference?->name ?? $payment->registrationPackage?->conference?->name ?? '',
                     'invoice'     => $payment->invoice_number,
                 ], 'payment_verified', $user->id, $payment->paper_id, $user->name);
             }
@@ -165,12 +174,20 @@ class PaymentList extends Component
 
         // Notify user
         $message = 'Pembayaran Anda (' . $payment->invoice_number . ') ditolak.' . ($this->adminNotes ? ' Alasan: ' . $this->adminNotes : '');
-        $actionUrl = $payment->type === 'participant'
-            ? route('dashboard')
-            : route('author.paper.payment', $payment->paper);
-        $actionLabel = $payment->type === 'participant' ? 'Lihat Dashboard' : 'Upload Ulang';
+        
+        $actionUrl = match($payment->type) {
+            'participant' => route('dashboard'),
+            'abstract' => route('author.payments'),
+            default => route('author.paper.payment', $payment->paper),
+        };
+        
+        $actionLabel = match($payment->type) {
+            'participant' => 'Lihat Dashboard',
+            'abstract' => 'Upload Ulang',
+            default => 'Upload Ulang',
+        };
 
-        if ($payment->type === 'paper') {
+        if ($payment->type === 'paper' || $payment->type === 'abstract') {
             $message .= ' Silakan upload ulang bukti bayar.';
         }
 
@@ -213,6 +230,15 @@ class PaymentList extends Component
                 route('author.paper.payment', $payment->paper),
                 'Upload Bukti Bayar'
             );
+        } elseif ($payment->type === 'abstract') {
+            \App\Models\Notification::createForUser(
+                $payment->user_id,
+                'warning',
+                'Status Pembayaran Direset',
+                'Status pembayaran abstrak Anda (' . $payment->invoice_number . ') dikembalikan ke Pending.',
+                route('author.payments'),
+                'Upload Bukti Bayar'
+            );
         } else {
             \App\Models\Notification::createForUser(
                 $payment->user_id,
@@ -229,7 +255,7 @@ class PaymentList extends Component
 
     public function render()
     {
-        $payments = Payment::with(['paper.user', 'user'])
+        $payments = Payment::with(['paper.user', 'user', 'abstract'])
             ->when($this->typeFilter, fn($q) => $q->where('type', $this->typeFilter))
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->latest()
@@ -239,7 +265,8 @@ class PaymentList extends Component
         $allCount = Payment::count();
         $paperCount = Payment::where('type', 'paper')->count();
         $participantCount = Payment::where('type', 'participant')->count();
+        $abstractCount = Payment::where('type', 'abstract')->count();
 
-        return view('livewire.admin.payment-list', compact('payments', 'allCount', 'paperCount', 'participantCount'))->layout('layouts.app');
+        return view('livewire.admin.payment-list', compact('payments', 'allCount', 'paperCount', 'participantCount', 'abstractCount'))->layout('layouts.app');
     }
 }

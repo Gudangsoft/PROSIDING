@@ -95,69 +95,89 @@
             </div>
             @endif
 
-            {{-- LOA & Payment Info --}}
-            @if($paper->loa_link)
+            {{-- LOA Download --}}
+            @if($paper->loa_link || $paper->acceptance_letter_path)
             <div class="bg-green-50 border border-green-200 rounded-xl p-6">
                 <div class="flex items-center gap-2 mb-3">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <h3 class="font-semibold text-green-800 text-lg">Letter of Acceptance (LOA)</h3>
                 </div>
-                <p class="text-sm text-green-700 mb-3">Paper Anda telah diterima! Silakan unduh LOA dan lakukan pembayaran.</p>
-                <a href="{{ $paper->loa_link }}" target="_blank" rel="noopener noreferrer"
-                   class="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                    Buka LOA
-                </a>
-
-                @if($paper->payment)
-                <div class="mt-4 pt-4 border-t border-green-200">
-                    <h4 class="text-sm font-bold text-green-800 mb-2">Tagihan Pembayaran</h4>
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                            <span class="text-green-600 text-xs">Invoice:</span>
-                            <p class="font-mono font-medium text-green-800">{{ $paper->payment->invoice_number }}</p>
-                        </div>
-                        <div>
-                            <span class="text-green-600 text-xs">Jumlah:</span>
-                            <p class="font-bold text-green-800 text-lg">Rp {{ number_format($paper->payment->amount, 0, ',', '.') }}</p>
-                        </div>
-                    </div>
-
-                    {{-- Info Rekening Bank --}}
-                    @php
-                        $pdConf = $paper->conference;
-                        $pdBankName = $pdConf->payment_bank_name ?? null;
-                        $pdBankAccount = $pdConf->payment_bank_account ?? null;
-                        $pdAccountHolder = $pdConf->payment_account_holder ?? null;
-                        $pdInstructions = $pdConf->payment_instructions ?? null;
-                    @endphp
-                    @if($pdBankName || $pdBankAccount)
-                    <div class="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <p class="text-xs font-bold text-blue-800 mb-1.5 flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                            Transfer ke Rekening:
-                        </p>
-                        <div class="text-xs space-y-0.5">
-                            @if($pdBankName)<p class="text-gray-700">Bank: <span class="font-medium">{{ $pdBankName }}</span></p>@endif
-                            @if($pdBankAccount)<p class="text-gray-700">No. Rekening: <span class="font-mono font-bold text-gray-900">{{ $pdBankAccount }}</span></p>@endif
-                            @if($pdAccountHolder)<p class="text-gray-700">a.n. <span class="font-medium">{{ $pdAccountHolder }}</span></p>@endif
-                        </div>
-                        @if($pdInstructions)
-                        <p class="text-[10px] text-blue-600 mt-1.5 italic">{{ $pdInstructions }}</p>
-                        @endif
-                    </div>
+                <p class="text-sm text-green-700 mb-3">Selamat! Paper Anda telah diterima. Silakan unduh LOA sebagai bukti penerimaan.</p>
+                
+                <div class="flex flex-wrap gap-2">
+                    @if($paper->acceptance_letter_path)
+                    <a href="{{ Storage::url($paper->acceptance_letter_path) }}" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Download LOA (PDF)
+                    </a>
+                    @if($paper->loa_number)
+                    <span class="inline-flex items-center px-3 py-2 bg-green-100 text-green-800 rounded-lg text-xs font-medium">
+                        No: {{ $paper->loa_number }}
+                    </span>
                     @endif
-
-                    @if(in_array($paper->payment->status, ['pending', 'rejected']))
-                    <a href="{{ route('author.paper.payment', $paper) }}" class="inline-flex items-center gap-2 mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        Upload Bukti Bayar
+                    @elseif($paper->loa_link)
+                    <a href="{{ $paper->loa_link }}" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        Buka LOA
                     </a>
                     @endif
                 </div>
-                @endif
             </div>
             @endif
+
+            {{-- Video Presentation Link --}}
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    <h3 class="font-semibold text-gray-800 text-lg">Video Presentasi</h3>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Unggah link video presentasi materi Anda (YouTube, Google Drive, dll.) agar dapat ditampilkan kepada panitia.</p>
+
+                @if($paper->video_presentation_url)
+                @php
+                    $vidUrl = $paper->video_presentation_url;
+                    $embedUrl = null;
+                    // Handle youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID
+                    if (preg_match('/(?:(?:www\.)?youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_\-]+)/', $vidUrl, $m)) {
+                        $embedUrl = 'https://www.youtube.com/embed/' . $m[1];
+                    }
+                @endphp
+                <div class="mb-4 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                    @if($embedUrl)
+                        <div class="aspect-video">
+                            <iframe src="{{ $embedUrl }}" class="w-full h-full" frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                        </div>
+                    @else
+                        <div class="p-3 flex items-center gap-3">
+                            <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            <a href="{{ $vidUrl }}" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-600 hover:underline break-all">{{ $vidUrl }}</a>
+                        </div>
+                    @endif
+                </div>
+                @endif
+
+                <form wire:submit.prevent="saveVideoUrl" class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Link Video (YouTube / Google Drive / lainnya)</label>
+                        <input type="url" wire:model="videoUrl"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400"
+                            placeholder="https://youtu.be/..." />
+                        @error('videoUrl') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span wire:loading.remove wire:target="saveVideoUrl">Simpan Link Video</span>
+                        <span wire:loading wire:target="saveVideoUrl">Menyimpan...</span>
+                    </button>
+                </form>
+            </div>
 
             {{-- Deliverables from Admin (Buku Prosiding, Sertifikat) --}}
             @if(in_array($paper->status, ['deliverables_pending', 'completed']))
@@ -206,35 +226,158 @@
 
         {{-- Sidebar --}}
         <div class="space-y-6">
-            {{-- Status Progress --}}
+            {{-- Status Progress Timeline --}}
             <div class="bg-white rounded-xl shadow-sm border p-6">
-                <h3 class="font-semibold text-gray-800 mb-4">Progress</h3>
+                <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    Progress Paper
+                </h3>
+                
                 @php
-                    $steps = [
-                        ['status' => 'submitted', 'label' => 'Submitted'],
-                        ['status' => 'in_review', 'label' => 'Review'],
-                        ['status' => 'accepted', 'label' => 'Accepted'],
-                        ['status' => 'payment_verified', 'label' => 'Pembayaran'],
-                        ['status' => 'completed', 'label' => 'Selesai'],
+                    $allSteps = [
+                        'submitted' => ['label' => 'Paper Disubmit', 'icon' => '📤', 'desc' => 'Paper berhasil dikirim ke sistem'],
+                        'screening' => ['label' => 'Screening Admin', 'icon' => '🔍', 'desc' => 'Sedang diperiksa kelengkapan dokumen'],
+                        'in_review' => ['label' => 'Proses Review', 'icon' => '📝', 'desc' => 'Sedang direview oleh reviewer'],
+                        'revision_required' => ['label' => 'Perlu Revisi', 'icon' => '🔄', 'desc' => 'Paper memerlukan perbaikan'],
+                        'revised' => ['label' => 'Revisi Terkirim', 'icon' => '📨', 'desc' => 'Revisi sedang diperiksa ulang'],
+                        'accepted' => ['label' => 'Diterima', 'icon' => '✅', 'desc' => 'Paper diterima untuk dipublikasikan'],
+                        'rejected' => ['label' => 'Ditolak', 'icon' => '❌', 'desc' => 'Paper tidak lolos review'],
+                        'deliverables_pending' => ['label' => 'Proses LOA', 'icon' => '📜', 'desc' => 'LOA & sertifikat sedang diproses'],
+                        'completed' => ['label' => 'Selesai', 'icon' => '🏆', 'desc' => 'LOA sudah tersedia untuk diunduh'],
                     ];
+                    
+                    // Define the main flow steps (tanpa pembayaran karena sudah di abstract)
+                    $mainFlow = ['submitted', 'screening', 'in_review', 'accepted', 'completed'];
                     $statusOrder = ['submitted','screening','in_review','revision_required','revised','accepted','rejected','payment_pending','payment_uploaded','payment_verified','deliverables_pending','completed'];
                     $currentIdx = array_search($paper->status, $statusOrder);
+                    $currentStatus = $paper->status;
+                    
+                    // Map payment/deliverable statuses to simplified view
+                    $displayStatus = $currentStatus;
+                    if (in_array($currentStatus, ['payment_pending', 'payment_uploaded', 'payment_verified', 'deliverables_pending'])) {
+                        $displayStatus = 'accepted'; // Show as accepted, waiting for LOA
+                    }
+                    
+                    // Determine which steps to show based on current status
+                    if ($currentStatus === 'rejected') {
+                        $showSteps = ['submitted', 'screening', 'in_review', 'rejected'];
+                    } elseif ($currentStatus === 'revision_required' || $currentStatus === 'revised') {
+                        $showSteps = ['submitted', 'screening', 'in_review', 'revision_required', 'revised', 'accepted', 'completed'];
+                    } else {
+                        $showSteps = $mainFlow;
+                    }
                 @endphp
-                <div class="space-y-3">
-                    @foreach($steps as $idx => $step)
+
+                {{-- Current Status Badge --}}
+                <div class="mb-5 p-3 rounded-xl {{ $currentStatus === 'rejected' ? 'bg-red-50 border border-red-200' : ($currentStatus === 'completed' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200') }}">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">{{ $allSteps[$currentStatus]['icon'] ?? '📄' }}</span>
+                        <div>
+                            <p class="text-xs {{ $currentStatus === 'rejected' ? 'text-red-600' : ($currentStatus === 'completed' ? 'text-green-600' : 'text-blue-600') }} font-medium">Status Saat Ini</p>
+                            <p class="font-bold {{ $currentStatus === 'rejected' ? 'text-red-800' : ($currentStatus === 'completed' ? 'text-green-800' : 'text-blue-800') }}">{{ $allSteps[$currentStatus]['label'] ?? $paper->status_label }}</p>
+                        </div>
+                    </div>
+                    <p class="text-xs {{ $currentStatus === 'rejected' ? 'text-red-600' : ($currentStatus === 'completed' ? 'text-green-600' : 'text-blue-600') }} mt-2">{{ $allSteps[$currentStatus]['desc'] ?? '' }}</p>
+                </div>
+
+                {{-- Timeline --}}
+                <div class="relative">
+                    @foreach($showSteps as $idx => $stepKey)
                         @php
-                            $stepIdx = array_search($step['status'], $statusOrder);
-                            $done = $currentIdx >= $stepIdx && $paper->status !== 'rejected';
+                            $step = $allSteps[$stepKey] ?? ['label' => $stepKey, 'icon' => '📄', 'desc' => ''];
+                            $stepIdx = array_search($stepKey, $statusOrder);
+                            $isCurrent = $stepKey === $currentStatus;
+                            $isDone = $currentIdx > $stepIdx;
+                            $isFuture = $currentIdx < $stepIdx;
+                            $isLast = $idx === count($showSteps) - 1;
                         @endphp
-                        <div class="flex items-center gap-3">
-                            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold {{ $done ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500' }}">
-                                @if($done) ✓ @else {{ $idx+1 }} @endif
+                        <div class="flex gap-3 {{ !$isLast ? 'pb-4' : '' }}">
+                            {{-- Timeline Line --}}
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0
+                                    {{ $isCurrent ? 'bg-blue-500 text-white ring-4 ring-blue-100' : '' }}
+                                    {{ $isDone ? 'bg-green-500 text-white' : '' }}
+                                    {{ $isFuture ? 'bg-gray-200 text-gray-400' : '' }}
+                                    {{ $stepKey === 'rejected' && $isCurrent ? 'bg-red-500 text-white ring-4 ring-red-100' : '' }}">
+                                    @if($isDone)
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                    @elseif($isCurrent)
+                                        <span class="text-xs">{{ $step['icon'] }}</span>
+                                    @else
+                                        {{ $idx + 1 }}
+                                    @endif
+                                </div>
+                                @if(!$isLast)
+                                <div class="w-0.5 flex-1 min-h-[20px] {{ $isDone ? 'bg-green-300' : 'bg-gray-200' }}"></div>
+                                @endif
                             </div>
-                            <span class="text-sm {{ $done ? 'text-green-700 font-medium' : 'text-gray-500' }}">{{ $step['label'] }}</span>
+                            {{-- Content --}}
+                            <div class="flex-1 pb-1">
+                                <p class="text-sm font-medium {{ $isCurrent ? 'text-blue-700' : ($isDone ? 'text-green-700' : 'text-gray-500') }}
+                                    {{ $stepKey === 'rejected' && $isCurrent ? 'text-red-700' : '' }}">
+                                    {{ $step['label'] }}
+                                </p>
+                                @if($isCurrent)
+                                <p class="text-xs text-gray-500 mt-0.5">{{ $step['desc'] }}</p>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>
+
+                {{-- Info Tambahan --}}
+                @if($paper->submitted_at)
+                <div class="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500 space-y-1">
+                    <p>📅 Disubmit: {{ $paper->submitted_at->format('d M Y, H:i') }}</p>
+                    @if($paper->accepted_at)
+                    <p>✅ Diterima: {{ $paper->accepted_at->format('d M Y, H:i') }}</p>
+                    @endif
+                    @if($paper->acceptance_letter_sent_at)
+                    <p>📜 LOA Terbit: {{ $paper->acceptance_letter_sent_at->format('d M Y, H:i') }}</p>
+                    @endif
+                </div>
+                @endif
             </div>
+
+            {{-- What's Next Card --}}
+            @if(!in_array($paper->status, ['completed', 'rejected']))
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-5 text-white">
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    Langkah Selanjutnya
+                </h4>
+                <p class="text-sm text-indigo-100">
+                    @switch($paper->status)
+                        @case('submitted')
+                            Paper Anda sedang menunggu screening oleh admin. Mohon tunggu 1-3 hari kerja.
+                            @break
+                        @case('screening')
+                            Admin sedang memeriksa kelengkapan dokumen. Paper akan segera ditugaskan ke reviewer.
+                            @break
+                        @case('in_review')
+                            Paper sedang direview. Proses ini memakan waktu 7-14 hari kerja.
+                            @break
+                        @case('revision_required')
+                            Silakan upload revisi paper sesuai catatan reviewer di bawah ini.
+                            @break
+                        @case('revised')
+                            Revisi Anda sedang diperiksa ulang oleh reviewer.
+                            @break
+                        @case('accepted')
+                            Selamat! Paper diterima. LOA akan segera diterbitkan oleh panitia.
+                            @break
+                        @case('payment_pending')
+                        @case('payment_uploaded')
+                        @case('payment_verified')
+                        @case('deliverables_pending')
+                            LOA dan sertifikat sedang diproses oleh panitia. Silakan cek secara berkala.
+                            @break
+                        @default
+                            Pantau terus progress paper Anda di halaman ini.
+                    @endswitch
+                </p>
+            </div>
+            @endif
 
             {{-- Revision Upload --}}
             @if($paper->status === 'revision_required')

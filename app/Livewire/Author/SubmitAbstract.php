@@ -7,10 +7,13 @@ use App\Models\Conference;
 use App\Models\Notification;
 use App\Models\User;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 
 class SubmitAbstract extends Component
 {
+    use WithFileUploads;
+
     public ?int $abstractId = null;
 
     // conference
@@ -26,6 +29,10 @@ class SubmitAbstract extends Component
     public array $authors = [
         ['name' => '', 'email' => '', 'institution' => '', 'is_correspondent' => true],
     ];
+
+    // file upload
+    public $abstractFile = null;
+    public ?string $existingFileName = null;
 
     public $conferences = [];
     public $topics      = [];
@@ -47,6 +54,7 @@ class SubmitAbstract extends Component
             $this->keywords     = $submission->keywords ?? '';
             $this->topic        = $submission->topic ?? '';
             $this->authors      = $submission->authors_meta ?? $this->authors;
+            $this->existingFileName = $submission->abstract_file_name;
             $this->isEdit       = true;
             $this->loadTopics();
         }
@@ -81,7 +89,7 @@ class SubmitAbstract extends Component
 
     public function save(): void
     {
-        $this->validate([
+        $rules = [
             'conference_id'  => 'required|exists:conferences,id',
             'title'          => 'required|min:10|max:500',
             'abstract'       => 'required|min:100|max:3000',
@@ -89,6 +97,19 @@ class SubmitAbstract extends Component
             'topic'          => 'nullable|max:200',
             'authors'        => 'required|array|min:1',
             'authors.*.name' => 'required|string|max:200',
+        ];
+
+        // File wajib untuk submit baru, opsional jika edit (sudah ada file sebelumnya)
+        if (!$this->isEdit || !$this->existingFileName) {
+            $rules['abstractFile'] = 'required|file|mimes:doc,docx|max:10240';
+        } else {
+            $rules['abstractFile'] = 'nullable|file|mimes:doc,docx|max:10240';
+        }
+
+        $this->validate($rules, [
+            'abstractFile.required' => 'File abstrak (Word) wajib diunggah.',
+            'abstractFile.mimes' => 'File abstrak harus berformat DOC atau DOCX.',
+            'abstractFile.max' => 'Ukuran file maksimal 10MB.',
         ]);
 
         $data = [
@@ -100,6 +121,13 @@ class SubmitAbstract extends Component
             'topic'         => $this->topic,
             'authors_meta'  => $this->authors,
         ];
+
+        // Handle file upload
+        if ($this->abstractFile) {
+            $path = $this->abstractFile->store('abstracts/' . Auth::id(), 'public');
+            $data['abstract_file_path'] = $path;
+            $data['abstract_file_name'] = $this->abstractFile->getClientOriginalName();
+        }
 
         if ($this->isEdit) {
             $submission = AbstractSubmission::where('user_id', Auth::id())->findOrFail($this->abstractId);

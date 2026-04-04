@@ -109,6 +109,17 @@ class RolesSeeder extends Seeder
                 'description'      => 'Penulis yang mengirimkan paper',
                 'sort_order'       => 9,
             ],
+            [
+                'name'             => 'Treasurer',
+                'slug'             => 'treasurer',
+                'permission_level' => 'assistant',
+                'can_submission'   => false,
+                'can_review'       => false,
+                'can_copyediting'  => false,
+                'can_production'   => false,
+                'description'      => 'Bendahara untuk verifikasi pembayaran dan laporan keuangan',
+                'sort_order'       => 10,
+            ],
         ];
 
         foreach ($roles as $role) {

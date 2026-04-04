@@ -18,6 +18,7 @@ class Paper extends Model
         'similarity_score', 'plagiarism_tool', 'plagiarism_note', 'plagiarism_checked_at',
         'doi', 'ojs_submission_id', 'ojs_status', 'ojs_submitted_at',
         'meeting_link', 'meeting_platform', 'meeting_scheduled_at',
+        'video_presentation_url',
         'extra_field_values', 'similarity_cross_score',
         'camera_ready_path', 'camera_ready_submitted_at', 'camera_ready_status', 'camera_ready_notes',
         'acceptance_letter_path', 'acceptance_letter_sent_at',
@@ -108,6 +109,11 @@ class Paper extends Model
     public function deliverables(): HasMany
     {
         return $this->hasMany(Deliverable::class);
+    }
+
+    public function certificate(): HasOne
+    {
+        return $this->hasOne(Certificate::class);
     }
 
     public function discussions(): HasMany

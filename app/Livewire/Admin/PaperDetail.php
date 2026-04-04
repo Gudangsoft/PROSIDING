@@ -85,6 +85,9 @@ class PaperDetail extends Component
     public string $meetingLink = '';
     public string $meetingScheduledAt = '';
 
+    // Video Presentation
+    public string $videoPresentationUrl = '';
+
     public function mount(Paper $paper)
     {
         $this->paper = $paper;
@@ -97,6 +100,7 @@ class PaperDetail extends Component
         $this->meetingPlatform = $paper->meeting_platform ?? '';
         $this->meetingLink     = $paper->meeting_link ?? '';
         $this->meetingScheduledAt = $paper->meeting_scheduled_at ? $paper->meeting_scheduled_at->format('Y-m-d\TH:i') : '';
+        $this->videoPresentationUrl = $paper->video_presentation_url ?? '';
 
         // Load conference packages for the accept-modal dropdown
         if ($paper->conference) {
@@ -377,24 +381,15 @@ class PaperDetail extends Component
     public function confirmAccept()
     {
         try {
-            // Validate based on mode
-            $validationRules = [
-                'acceptInvoiceAmount' => 'required|numeric|min:0',
-            ];
-            
-            $validationMessages = [
-                'acceptInvoiceAmount.required' => 'Jumlah tagihan wajib diisi.',
-                'acceptInvoiceAmount.numeric' => 'Jumlah tagihan harus berupa angka.',
-            ];
-            
-            // Only require LOA link if not auto-generating
+            // Validate LOA link if manual mode
             if (!$this->autoGenerateLoa) {
-                $validationRules['acceptLoaLink'] = 'required|url';
-                $validationMessages['acceptLoaLink.required'] = 'Link LOA wajib diisi.';
-                $validationMessages['acceptLoaLink.url'] = 'Link LOA harus berupa URL yang valid.';
+                $this->validate([
+                    'acceptLoaLink' => 'required|url',
+                ], [
+                    'acceptLoaLink.required' => 'Link LOA wajib diisi.',
+                    'acceptLoaLink.url' => 'Link LOA harus berupa URL yang valid.',
+                ]);
             }
-            
-            $this->validate($validationRules, $validationMessages);
 
             $loaLink = '';
             
@@ -407,33 +402,21 @@ class PaperDetail extends Component
                 $loaLink = $this->acceptLoaLink;
             }
 
-            // Update paper status
+            // Update paper status directly to accepted (pembayaran sudah di tahap abstract)
             $this->paper->update([
-                'status' => 'payment_pending',
+                'status' => 'accepted',
                 'accepted_at' => now(),
                 'loa_link' => $loaLink,
             ]);
-
-            // Create invoice automatically
-            if (!$this->paper->payment) {
-                Payment::create([
-                    'paper_id' => $this->paper->id,
-                    'user_id' => $this->paper->user_id,
-                    'invoice_number' => Payment::generateInvoiceNumber(),
-                    'amount' => $this->acceptInvoiceAmount,
-                    'description' => $this->acceptInvoiceDescription,
-                    'status' => 'pending',
-                ]);
-            }
 
             // Send notification to author with LOA
             \App\Models\Notification::createForUser(
                 $this->paper->user_id,
                 'success',
                 'Paper Diterima! 🎉 LOA Tersedia',
-                'Selamat! Paper Anda "' . \Illuminate\Support\Str::limit($this->paper->title, 50) . '" telah diterima. LOA dan tagihan pembayaran telah tersedia.',
+                'Selamat! Paper Anda "' . \Illuminate\Support\Str::limit($this->paper->title, 50) . '" telah diterima. Silakan download LOA Anda.',
                 route('author.paper.detail', $this->paper),
-                'Lihat LOA & Bayar'
+                'Lihat LOA'
             );
 
             $this->showAcceptModal = false;
@@ -442,8 +425,8 @@ class PaperDetail extends Component
             $this->workflowTab = 'production';
 
             $message = $this->autoGenerateLoa 
-                ? 'Paper diterima! LOA auto-generated dan tagihan berhasil dikirim ke author.'
-                : 'Paper diterima! LOA dan tagihan berhasil dikirim ke author.';
+                ? 'Paper diterima! LOA berhasil di-generate dan tersedia untuk author.'
+                : 'Paper diterima! LOA berhasil disimpan.';
             session()->flash('success', $message);
             $this->dispatch('paperStatusUpdated');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -894,6 +877,18 @@ class PaperDetail extends Component
             'meeting_scheduled_at' => $this->meetingScheduledAt ?: null,
         ]);
         $this->dispatch('notify', type: 'success', message: 'Info meeting disimpan.');
+    }
+
+    public function saveVideoPresentationUrl(): void
+    {
+        $this->validate([
+            'videoPresentationUrl' => 'nullable|url|max:500',
+        ]);
+        $this->paper->update([
+            'video_presentation_url' => $this->videoPresentationUrl ?: null,
+        ]);
+        $this->paper->refresh();
+        $this->dispatch('notify', type: 'success', message: 'Link video presentasi disimpan.');
     }
 
     public function render()

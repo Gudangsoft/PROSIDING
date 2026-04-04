@@ -18,7 +18,7 @@ class AbstractList extends Component
 
     public function loadAbstracts(): void
     {
-        $this->abstracts = AbstractSubmission::with('conference')
+        $this->abstracts = AbstractSubmission::with(['conference', 'payment', 'paper'])
             ->where('user_id', Auth::id())
             ->latest()
             ->get();

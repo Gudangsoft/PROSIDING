@@ -76,7 +76,8 @@
         </div>
     </div>
 
-    {{-- Payment Status --}}
+    {{-- Payment Status (only for participant role) --}}
+    @if(Auth::user()->isParticipant())
     <div class="bg-white rounded-xl shadow-sm border overflow-hidden mb-6">
         <div class="px-6 py-4 border-b bg-gray-50">
             <h2 class="font-semibold text-gray-800">Status Pembayaran</h2>
@@ -113,9 +114,7 @@
                     <div class="text-sm text-gray-500 mt-0.5 space-y-0.5">
                         <p>Invoice: <span class="font-mono">{{ $payment->invoice_number }}</span></p>
                         @if($payment->registrationPackage)
-                            <p>
-                                Paket: <strong class="text-teal-600">{{ $payment->registrationPackage->name }}</strong>
-                            </p>
+                            <p>Paket: <strong class="text-teal-600">{{ $payment->registrationPackage->name }}</strong></p>
                         @endif
                         <p>Nominal: <strong>Rp {{ number_format($payment->amount, 0, ',', '.') }}</strong></p>
                         @if($payment->payment_method)
@@ -139,6 +138,40 @@
             @endif
         </div>
     </div>
+    @endif
+
+    {{-- Paper Status (for authors/pemakalah) --}}
+    @if(Auth::user()->isAuthor() && $papers && $papers->count())
+    <div class="bg-white rounded-xl shadow-sm border overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b bg-gray-50">
+            <h2 class="font-semibold text-gray-800">Status Paper Anda</h2>
+        </div>
+        <div class="divide-y divide-gray-100">
+            @foreach($papers as $p)
+            @php $color = $p->status_color; @endphp
+            <div class="px-6 py-4 flex items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <p class="text-sm font-medium text-gray-800 truncate">{{ $p->title }}</p>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ $p->conference?->name ?? '-' }}</p>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        @if($color==='green' || $color==='emerald') bg-green-100 text-green-800
+                        @elseif($color==='red') bg-red-100 text-red-800
+                        @elseif($color==='yellow' || $color==='amber') bg-yellow-100 text-yellow-800
+                        @elseif($color==='blue' || $color==='cyan') bg-blue-100 text-blue-800
+                        @elseif($color==='orange') bg-orange-100 text-orange-800
+                        @elseif($color==='indigo' || $color==='purple') bg-indigo-100 text-indigo-800
+                        @else bg-gray-100 text-gray-800 @endif">
+                        {{ $p->status_label }}
+                    </span>
+                    <a href="{{ route('author.paper.detail', $p) }}" class="text-xs text-teal-600 hover:text-teal-800 font-medium">Detail →</a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
     {{-- Conference Info --}}
     @if($conference)

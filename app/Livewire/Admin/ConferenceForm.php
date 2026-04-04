@@ -12,6 +12,7 @@ use App\Models\SubmissionGuideline;
 use App\Models\DeliverableTemplate;
 use App\Models\EmailTemplate;
 use App\Models\JournalPublication;
+use App\Models\LoaTemplate;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -93,6 +94,9 @@ class ConferenceForm extends Component
 
     // Email templates (keyed by template key)
     public array $emailTemplates = [];
+
+    // LOA templates
+    public array $loaTemplates = [];
 
     // WhatsApp group links
     public string $wa_group_pemakalah = '';
@@ -207,6 +211,27 @@ class ConferenceForm extends Component
                     'is_active' => $t->is_active,
                 ]
             ])->toArray();
+
+            // Load LOA templates
+            $this->loaTemplates = LoaTemplate::where('conference_id', $conference->id)
+                ->orderByDesc('is_default')
+                ->orderBy('name')
+                ->get()
+                ->map(fn($t) => [
+                    'id' => $t->id,
+                    'name' => $t->name,
+                    'type' => $t->type,
+                    'type_label' => $t->type_label,
+                    'orientation' => $t->orientation,
+                    'paper_size' => $t->paper_size,
+                    'is_default' => $t->is_default,
+                    'is_active' => $t->is_active,
+                    'has_signature' => !empty($t->signature_image),
+                    'has_logo' => !empty($t->logo_image),
+                    'has_letterhead' => !empty($t->letterhead_image),
+                    'has_stamp' => !empty($t->stamp_image),
+                ])
+                ->toArray();
 
             // Load payment info
             $this->payment_bank_name = $conference->payment_bank_name ?? '';

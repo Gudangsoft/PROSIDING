@@ -59,6 +59,14 @@
             <div>
                 <h2 class="text-lg font-semibold text-gray-800">{{ $activeConference->name }}</h2>
                 @if($activeConference->theme)<p class="text-sm text-gray-500 mt-1">{{ $activeConference->theme }}</p>@endif
+                    @if($activeConference->meeting_link)
+                    <div class="mt-2">
+                        <a href="{{ $activeConference->meeting_link }}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                            Join Zoom Kegiatan
+                        </a>
+                    </div>
+                    @endif
             </div>
             @if($activeConference->acronym)<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">{{ $activeConference->acronym }}</span>@endif
         </div>
@@ -298,6 +306,90 @@
             </div>
             @else
             <p class="px-6 py-8 text-center text-gray-400 text-sm">Belum ada submission.</p>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- ============ TREASURER (BENDAHARA) DASHBOARD ============ --}}
+    @if($user->isTreasurer())
+    @php
+        $pendingPayments = \App\Models\Payment::where('status', 'uploaded')->count();
+        $verifiedPayments = \App\Models\Payment::where('status', 'verified')->count();
+        $totalRevenue = \App\Models\Payment::where('status', 'verified')->sum('amount');
+        $todayPayments = \App\Models\Payment::whereDate('created_at', today())->count();
+        $weekPayments = \App\Models\Payment::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $monthPayments = \App\Models\Payment::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+    @endphp
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div class="bg-white rounded-xl shadow-sm p-5 border text-center">
+            <p class="text-2xl font-bold text-orange-600">{{ $pendingPayments }}</p>
+            <p class="text-xs text-gray-500 mt-1">Menunggu Verifikasi</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border text-center">
+            <p class="text-2xl font-bold text-green-600">{{ $verifiedPayments }}</p>
+            <p class="text-xs text-gray-500 mt-1">Terverifikasi</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border text-center">
+            <p class="text-2xl font-bold text-emerald-600">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
+            <p class="text-xs text-gray-500 mt-1">Total Pendapatan</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border text-center">
+            <p class="text-2xl font-bold text-blue-600">{{ $todayPayments }}</p>
+            <p class="text-xs text-gray-500 mt-1">Hari Ini</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border text-center">
+            <p class="text-2xl font-bold text-indigo-600">{{ $weekPayments }}</p>
+            <p class="text-xs text-gray-500 mt-1">Minggu Ini</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border text-center">
+            <p class="text-2xl font-bold text-purple-600">{{ $monthPayments }}</p>
+            <p class="text-xs text-gray-500 mt-1">Bulan Ini</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-6 border">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h2>
+            <div class="space-y-3">
+                <a href="{{ route('treasurer.payments') }}" class="flex items-center p-3 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition">
+                    <svg class="w-6 h-6 text-emerald-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <div><p class="font-medium text-sm text-gray-800">Verifikasi Pembayaran</p><p class="text-xs text-gray-500">{{ $pendingPayments }} pembayaran menunggu verifikasi</p></div>
+                </a>
+                <a href="{{ route('treasurer.reports') }}" class="flex items-center p-3 bg-teal-50 rounded-lg hover:bg-teal-100 transition">
+                    <svg class="w-6 h-6 text-teal-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <div><p class="font-medium text-sm text-gray-800">Laporan Keuangan</p><p class="text-xs text-gray-500">Lihat laporan & eksport data</p></div>
+                </a>
+                <a href="{{ route('treasurer.reports.revenue') }}" class="flex items-center p-3 bg-cyan-50 rounded-lg hover:bg-cyan-100 transition">
+                    <svg class="w-6 h-6 text-cyan-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <div><p class="font-medium text-sm text-gray-800">Export Pendapatan</p><p class="text-xs text-gray-500">Download laporan Excel</p></div>
+                </a>
+            </div>
+        </div>
+
+        {{-- Recent Payments --}}
+        <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <div class="px-6 py-4 border-b flex items-center justify-between">
+                <h3 class="font-semibold text-gray-800">Pembayaran Terbaru</h3>
+                <a href="{{ route('treasurer.payments') }}" class="text-emerald-600 text-xs font-medium">Lihat Semua</a>
+            </div>
+            @php $recentPayments = \App\Models\Payment::with('user')->latest()->take(5)->get(); @endphp
+            @if($recentPayments->count())
+            <div class="divide-y">
+                @foreach($recentPayments as $payment)
+                <div class="px-6 py-3 flex justify-between items-center hover:bg-gray-50">
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">{{ $payment->user?->name ?? 'N/A' }}</p>
+                        <p class="text-xs text-gray-400">Rp {{ number_format($payment->amount, 0, ',', '.') }} &bull; {{ $payment->created_at?->diffForHumans() }}</p>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full {{ $payment->status === 'verified' ? 'bg-green-100 text-green-700' : ($payment->status === 'uploaded' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600') }}">
+                        {{ ucfirst($payment->status) }}
+                    </span>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <p class="px-6 py-8 text-center text-gray-400 text-sm">Belum ada pembayaran.</p>
             @endif
         </div>
     </div>

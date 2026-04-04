@@ -128,7 +128,7 @@ class UsersRoles extends Component
         $rules = [
             'userName'  => 'required|string|max:255',
             'userEmail' => 'required|email|max:255|unique:users,email,' . ($this->editUserId ?? 'NULL'),
-            'userRole'  => 'required|in:admin,editor,reviewer,author,participant',
+            'userRole'  => 'required|in:admin,editor,treasurer,reviewer,author,participant',
         ];
 
         if (!$this->editingUser) {

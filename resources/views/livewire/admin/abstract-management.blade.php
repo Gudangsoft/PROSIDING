@@ -29,10 +29,45 @@
         </div>
 
         {{-- Modal Review --}}
-        @if($reviewingId)
+        @if($reviewingId && $reviewingAbstract)
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" x-data>
-            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6">
+            <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Review Abstrak</h3>
+                
+                {{-- Abstract Details --}}
+                <div class="bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Judul</label>
+                        <p class="text-sm font-semibold text-gray-800">{{ $reviewingAbstract->title }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Abstrak</label>
+                        <p class="text-sm text-gray-700 leading-relaxed">{{ $reviewingAbstract->abstract }}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-0.5">Keywords</label>
+                            <p class="text-sm text-gray-700">{{ $reviewingAbstract->keywords ?? '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-0.5">Topik</label>
+                            <p class="text-sm text-gray-700">{{ $reviewingAbstract->topic ?? '-' }}</p>
+                        </div>
+                    </div>
+                    @if($reviewingAbstract->abstract_file_path)
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">File Abstrak</label>
+                        <a href="{{ route('admin.abstract.download', $reviewingAbstract) }}" target="_blank" 
+                           class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-2 border border-blue-200 rounded-lg hover:bg-blue-50 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            {{ $reviewingAbstract->abstract_file_name ?? 'Download File Abstrak' }}
+                        </a>
+                    </div>
+                    @endif
+                </div>
+                
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -65,6 +100,7 @@
                         <th class="text-left px-4 py-3 font-semibold text-gray-600">Judul</th>
                         <th class="text-left px-4 py-3 font-semibold text-gray-600 hidden md:table-cell">Author</th>
                         <th class="text-left px-4 py-3 font-semibold text-gray-600 hidden lg:table-cell">Konferensi</th>
+                        <th class="text-center px-4 py-3 font-semibold text-gray-600">File</th>
                         <th class="text-center px-4 py-3 font-semibold text-gray-600">Status</th>
                         <th class="text-center px-4 py-3 font-semibold text-gray-600">Aksi</th>
                     </tr>
@@ -83,6 +119,20 @@
                         </td>
                         <td class="px-4 py-3 hidden lg:table-cell text-gray-600 text-xs">{{ $abs->conference?->name }}</td>
                         <td class="px-4 py-3 text-center">
+                            @if($abs->abstract_file_path)
+                                <a href="{{ route('admin.abstract.download', $abs) }}" target="_blank" 
+                                   class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 border border-blue-200 rounded-lg hover:bg-blue-50 transition" 
+                                   title="{{ $abs->abstract_file_name ?? 'Download File' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">Download</span>
+                                </a>
+                            @else
+                                <span class="text-xs text-gray-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3 text-center">
                             <span class="inline-flex px-2.5 py-1 text-xs font-semibold rounded-full bg-{{ $c }}-100 text-{{ $c }}-700">{{ $abs->status_label }}</span>
                         </td>
                         <td class="px-4 py-3 text-center">
@@ -90,7 +140,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="5" class="text-center py-12 text-gray-400">Tidak ada abstrak ditemukan.</td></tr>
+                    <tr><td colspan="6" class="text-center py-12 text-gray-400">Tidak ada abstrak ditemukan.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -12,8 +12,8 @@ class AbstractSubmission extends Model
 
     protected $fillable = [
         'user_id', 'conference_id', 'title', 'abstract', 'keywords',
-        'topic', 'authors_meta', 'status', 'reviewer_notes',
-        'reviewed_by', 'reviewed_at', 'paper_id',
+        'topic', 'authors_meta', 'abstract_file_path', 'abstract_file_name',
+        'status', 'reviewer_notes', 'reviewed_by', 'reviewed_at', 'paper_id',
     ];
 
     protected $casts = [
@@ -63,5 +63,10 @@ class AbstractSubmission extends Model
     public function paper(): BelongsTo
     {
         return $this->belongsTo(Paper::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(\App\Models\Payment::class, 'abstract_id');
     }
 }

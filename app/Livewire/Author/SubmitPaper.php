@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Author;
 
+use App\Models\AbstractSubmission;
 use App\Models\Paper;
 use App\Models\PaperFile;
 use App\Models\Topic;
@@ -13,6 +14,9 @@ class SubmitPaper extends Component
 {
     use WithFileUploads;
 
+    public ?int $abstractId = null;
+    public ?AbstractSubmission $abstractSubmission = null;
+    
     public string $title = '';
     public string $abstract = '';
     public string $keywords = '';
@@ -27,15 +31,70 @@ class SubmitPaper extends Component
     public string $contribEmail = '';
     public string $contribInstitution = '';
 
-    protected $rules = [
-        'title' => 'required|min:10|max:500',
-        'abstract' => 'required|min:50',
-        'keywords' => 'required',
-        'selectedTopic' => 'required',
-        'abstractFile' => 'required|file|mimes:pdf,doc,docx|max:10240',
-        'paperFile' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
-        'turnitinFile' => 'nullable|file|mimes:pdf|max:10240',
-    ];
+    // Indicator if data comes from approved abstract
+    public bool $fromAbstract = false;
+
+    public function mount(): void
+    {
+        // Check if abstract_id is passed in URL
+        $abstractId = request()->query('abstract_id');
+        
+        if ($abstractId) {
+            $abstract = AbstractSubmission::where('user_id', Auth::id())
+                ->where('id', $abstractId)
+                ->where('status', 'approved')
+                ->whereNull('paper_id') // Belum digunakan untuk paper lain
+                ->first();
+
+            if ($abstract) {
+                $this->abstractId = $abstract->id;
+                $this->abstractSubmission = $abstract;
+                $this->fromAbstract = true;
+                
+                // Pre-populate fields from abstract
+                $this->title = $abstract->title;
+                $this->abstract = $abstract->abstract;
+                $this->keywords = $abstract->keywords ?? '';
+                $this->selectedTopic = $abstract->topic ?? '';
+                
+                // Convert authors_meta to contributors format
+                if ($abstract->authors_meta) {
+                    foreach ($abstract->authors_meta as $author) {
+                        // Skip if same as current user (akan ditampilkan sebagai penulis utama)
+                        if (isset($author['email']) && $author['email'] === Auth::user()->email) {
+                            continue;
+                        }
+                        $this->contributors[] = [
+                            'name' => $author['name'] ?? '',
+                            'email' => $author['email'] ?? '',
+                            'institution' => $author['institution'] ?? '',
+                        ];
+                    }
+                }
+            }
+        }
+    }
+
+    public function getRules(): array
+    {
+        $rules = [
+            'title' => 'required|min:10|max:500',
+            'abstract' => 'required|min:50',
+            'keywords' => 'required',
+            'selectedTopic' => 'required',
+            'paperFile' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'turnitinFile' => 'nullable|file|mimes:pdf|max:10240',
+        ];
+
+        // Abstract file hanya wajib jika TIDAK dari abstract yang sudah approved
+        if (!$this->fromAbstract) {
+            $rules['abstractFile'] = 'required|file|mimes:pdf,doc,docx|max:10240';
+        } else {
+            $rules['abstractFile'] = 'nullable|file|mimes:pdf,doc,docx|max:10240';
+        }
+
+        return $rules;
+    }
 
     protected $messages = [
         'title.required' => 'Judul paper wajib diisi.',
@@ -95,13 +154,16 @@ class SubmitPaper extends Component
 
     public function submit()
     {
-        $this->validate();
+        $this->validate($this->getRules());
 
         $activeConference = \App\Models\Conference::where('is_active', true)->first();
 
+        // Jika dari abstract, gunakan conference dari abstract
+        $conferenceId = $this->abstractSubmission?->conference_id ?? $activeConference?->id;
+
         $paper = Paper::create([
             'user_id' => Auth::id(),
-            'conference_id' => $activeConference?->id,
+            'conference_id' => $conferenceId,
             'title' => $this->title,
             'abstract' => $this->abstract,
             'keywords' => $this->keywords,
@@ -111,16 +173,35 @@ class SubmitPaper extends Component
             'submitted_at' => now(),
         ]);
 
-        // Upload abstract file (wajib)
-        $abstractPath = $this->abstractFile->store('papers/' . $paper->id, 'public');
-        PaperFile::create([
-            'paper_id' => $paper->id,
-            'type' => 'abstract',
-            'file_path' => $abstractPath,
-            'original_name' => $this->abstractFile->getClientOriginalName(),
-            'mime_type' => $this->abstractFile->getMimeType(),
-            'file_size' => $this->abstractFile->getSize(),
-        ]);
+        // Link abstract to paper if from abstract
+        if ($this->abstractSubmission) {
+            $this->abstractSubmission->update(['paper_id' => $paper->id]);
+            
+            // Copy abstract file from abstract submission if exists and no new file uploaded
+            if (!$this->abstractFile && $this->abstractSubmission->abstract_file_path) {
+                PaperFile::create([
+                    'paper_id' => $paper->id,
+                    'type' => 'abstract',
+                    'file_path' => $this->abstractSubmission->abstract_file_path,
+                    'original_name' => $this->abstractSubmission->abstract_file_name ?? 'abstract.docx',
+                    'mime_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'file_size' => 0,
+                ]);
+            }
+        }
+
+        // Upload abstract file jika ada (baru diupload)
+        if ($this->abstractFile) {
+            $abstractPath = $this->abstractFile->store('papers/' . $paper->id, 'public');
+            PaperFile::create([
+                'paper_id' => $paper->id,
+                'type' => 'abstract',
+                'file_path' => $abstractPath,
+                'original_name' => $this->abstractFile->getClientOriginalName(),
+                'mime_type' => $this->abstractFile->getMimeType(),
+                'file_size' => $this->abstractFile->getSize(),
+            ]);
+        }
 
         // Upload full paper if provided (opsional)
         if ($this->paperFile) {

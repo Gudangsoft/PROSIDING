@@ -54,6 +54,30 @@
                 </div>
             </div>
 
+            {{-- File Abstrak (Word) --}}
+            <div class="bg-white rounded-2xl border border-gray-200 p-5">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                    File Abstrak (DOC/DOCX) <span class="text-red-500">*</span>
+                </label>
+                <p class="text-xs text-gray-500 mb-3">Upload file abstrak dalam format Microsoft Word (DOC/DOCX). Maksimal 10MB.</p>
+                
+                @if($existingFileName)
+                <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3">
+                    <svg class="w-5 h-5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-blue-800 font-medium truncate">{{ $existingFileName }}</p>
+                        <p class="text-xs text-blue-600">File sudah diunggah sebelumnya</p>
+                    </div>
+                </div>
+                @endif
+
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-400 transition">
+                    <input type="file" wire:model="abstractFile" accept=".doc,.docx" class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <div wire:loading wire:target="abstractFile" class="mt-2 text-sm text-blue-600">Mengunggah file...</div>
+                </div>
+                @error('abstractFile')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
+            </div>
+
             {{-- Penulis --}}
             <div class="bg-white rounded-2xl border border-gray-200 p-5">
                 <div class="flex items-center justify-between mb-3">

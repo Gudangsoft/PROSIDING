@@ -41,6 +41,7 @@
                 'reviewers' => ['label' => 'Reviewer', 'count' => count($reviewers), 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
                 'guidelines' => ['label' => 'Panduan', 'count' => null, 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
                 'templates' => ['label' => 'Template Luaran', 'count' => count($deliverableTemplates), 'icon' => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'],
+                'loa_templates' => ['label' => 'Template LOA', 'count' => count($loaTemplates), 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
                 'journals' => ['label' => 'Jurnal Publikasi', 'count' => count($journals), 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'],
                 'email_templates' => ['label' => 'Template Email', 'count' => count($emailTemplates), 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
                 'whatsapp' => ['label' => 'Grup WhatsApp', 'count' => null, 'icon' => 'M12 18h.01M8 21l4-4 4 4M3 9.5A8.5 8.5 0 1112 3a8.5 8.5 0 01-9 6.5'],
@@ -1031,6 +1032,80 @@
     </div>
     @endif
 
+    {{-- TAB: Template LOA --}}
+    @if($activeTab === 'loa_templates')
+    <div class="space-y-4">
+        {{-- Info banner --}}
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="text-sm text-blue-700">
+                <p class="font-semibold">Template Letter of Acceptance (LOA)</p>
+                <p class="mt-0.5">LOA akan digenerate dan dikirim otomatis ke author saat abstrak disetujui. Kelola template LOA untuk kegiatan ini.</p>
+            </div>
+        </div>
+
+        @if($isEdit)
+        {{-- Template Grid --}}
+        @if(count($loaTemplates) > 0)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($loaTemplates as $template)
+            <div class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group {{ $template['is_default'] ? 'ring-2 ring-emerald-500' : '' }}">
+                {{-- Preview Area --}}
+                <div class="h-28 bg-gradient-to-br from-gray-100 to-gray-50 relative flex items-center justify-center p-3">
+                    <div class="text-center">
+                        <svg class="w-10 h-10 text-gray-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p class="text-xs text-gray-400 mt-1">Template LOA</p>
+                    </div>
+                    @if($template['is_default'])
+                    <div class="absolute top-2 right-2">
+                        <span class="px-2 py-0.5 bg-emerald-500 text-white text-[9px] font-bold rounded-full">DEFAULT</span>
+                    </div>
+                    @endif
+                    @if(!$template['is_active'])
+                    <div class="absolute top-2 left-2">
+                        <span class="px-2 py-0.5 bg-gray-500 text-white text-[9px] font-bold rounded-full">NONAKTIF</span>
+                    </div>
+                    @endif
+                </div>
+                {{-- Info --}}
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-800 text-sm">{{ $template['name'] }}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ $template['type_label'] }} • {{ ucfirst($template['orientation']) }} • {{ strtoupper($template['paper_size']) }}</p>
+                    {{-- Asset indicators --}}
+                    <div class="flex items-center gap-1 mt-2 flex-wrap">
+                        @if($template['has_signature'])<span class="text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-full">✍️ TTD</span>@endif
+                        @if($template['has_logo'])<span class="text-[9px] px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded-full">🏛️ Logo</span>@endif
+                        @if($template['has_letterhead'])<span class="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full">📄 Kop</span>@endif
+                        @if($template['has_stamp'])<span class="text-[9px] px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded-full">🔖 Stempel</span>@endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+            <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-gray-500 font-medium">Belum ada Template LOA</p>
+            <p class="text-sm text-gray-400 mt-1">Buat template LOA untuk kegiatan ini</p>
+        </div>
+        @endif
+
+        {{-- Manage Button --}}
+        <div class="flex justify-center pt-4">
+            <a href="{{ route('admin.acceptance-letters') }}?conference={{ $conference->id }}"
+               class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition shadow">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                Kelola Template LOA
+            </a>
+        </div>
+        @else
+        <div class="text-center py-8 text-gray-500">
+            <p>Simpan kegiatan terlebih dahulu untuk mengelola Template LOA.</p>
+        </div>
+        @endif
+    </div>
+    @endif
+
     {{-- TAB: Template Email --}}
     @if($activeTab === 'email_templates')
     <div class="space-y-4">
@@ -1333,7 +1408,7 @@
             {{-- Tab navigation hints --}}
             <div class="hidden sm:flex items-center gap-1 text-xs text-gray-400">
                 @php
-                    $tabs = ['general', 'dates', 'committees', 'topics', 'speakers', 'pricing', 'reviewers', 'guidelines', 'templates', 'journals', 'email_templates', 'whatsapp'];
+                    $tabs = ['general', 'dates', 'committees', 'topics', 'speakers', 'pricing', 'reviewers', 'guidelines', 'templates', 'loa_templates', 'journals', 'email_templates', 'whatsapp'];
                     $currentIdx = array_search($activeTab, $tabs);
                 @endphp
                 @if($currentIdx > 0)

@@ -47,6 +47,7 @@
                     <option value="">Semua Role</option>
                     <option value="admin">Admin</option>
                     <option value="editor">Editor</option>
+                    <option value="treasurer">Bendahara</option>
                     <option value="reviewer">Reviewer</option>
                     <option value="author">Author</option>
                     <option value="participant">Partisipan</option>
@@ -347,6 +348,7 @@
                     <select wire:model="userRole" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="admin">Admin</option>
                         <option value="editor">Editor</option>
+                        <option value="treasurer">Bendahara</option>
                         <option value="reviewer">Reviewer</option>
                         <option value="author">Author</option>
                         <option value="participant">Partisipan</option>

@@ -514,91 +514,6 @@
 
                 {{-- ──── PRODUCTION TAB ──── --}}
                 @elseif($workflowTab === 'production')
-                    {{-- Payment Section --}}
-                    <div class="border border-gray-200 rounded mb-5">
-                        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
-                            <h3 class="text-sm font-bold text-gray-800">Payment</h3>
-                        </div>
-                        <div class="p-4">
-                            @if(!$paper->payment)
-                                <div class="flex gap-3 items-end">
-                                    <div class="flex-1">
-                                        <label class="block text-xs font-medium text-gray-600 mb-1">Amount (Rp)</label>
-                                        <input type="number" wire:model="invoiceAmount" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="500000">
-                                    </div>
-                                    <div class="flex-1">
-                                        <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
-                                        <input type="text" wire:model="invoiceDescription" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                                    </div>
-                                    <button wire:click="createInvoice" type="button" class="px-4 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 font-medium cursor-pointer">
-                                    <span wire:loading.remove wire:target="createInvoice">Create Invoice</span>
-                                    <span wire:loading wire:target="createInvoice">Creating...</span>
-                                </button>
-                                </div>
-                                {{-- Info Rekening --}}
-                                @php
-                                    $pConf = $paper->conference;
-                                    $pBankName = $pConf->payment_bank_name ?? null;
-                                    $pBankAccount = $pConf->payment_bank_account ?? null;
-                                    $pAccountHolder = $pConf->payment_account_holder ?? null;
-                                @endphp
-                                @if($pBankName || $pBankAccount)
-                                <div class="mt-3 bg-blue-50 border border-blue-200 rounded p-3">
-                                    <p class="text-xs font-bold text-blue-800 mb-1">Rekening Tujuan Pembayaran:</p>
-                                    <div class="text-xs space-y-0.5">
-                                        @if($pBankName)<p>Bank: <span class="font-medium">{{ $pBankName }}</span></p>@endif
-                                        @if($pBankAccount)<p>No. Rekening: <span class="font-mono font-bold">{{ $pBankAccount }}</span></p>@endif
-                                        @if($pAccountHolder)<p>a.n. <span class="font-medium">{{ $pAccountHolder }}</span></p>@endif
-                                    </div>
-                                </div>
-                                @endif
-                            @else
-                                <div class="grid grid-cols-2 gap-4 text-sm mb-4">
-                                    <div>
-                                        <span class="text-gray-500 text-xs">Invoice Number:</span>
-                                        <p class="font-mono font-medium">{{ $paper->payment->invoice_number }}</p>
-                                    </div>
-                                    <div>
-                                        <span class="text-gray-500 text-xs">Amount:</span>
-                                        <p class="font-bold text-lg">Rp {{ number_format($paper->payment->amount, 0, ',', '.') }}</p>
-                                    </div>
-                                    <div>
-                                        <span class="text-gray-500 text-xs">Status:</span>
-                                        <p>
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
-                                                {{ $paper->payment->status === 'verified' ? 'bg-green-100 text-green-800' :
-                                                   ($paper->payment->status === 'uploaded' ? 'bg-blue-100 text-blue-800' :
-                                                   ($paper->payment->status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')) }}">
-                                                {{ ucfirst($paper->payment->status) }}
-                                            </span>
-                                        </p>
-                                    </div>
-                                    @if($paper->payment->payment_proof)
-                                    <div>
-                                        <span class="text-gray-500 text-xs">Payment Proof:</span>
-                                        <p><a href="{{ asset('storage/' . $paper->payment->payment_proof) }}" target="_blank" class="text-blue-600 text-sm hover:underline">View Proof</a></p>
-                                    </div>
-                                    @endif
-                                </div>
-
-                                @if($paper->payment->status === 'uploaded')
-                                <div class="flex gap-2">
-                                    <button wire:click="verifyPayment('verify')" type="button" wire:confirm="Verifikasi pembayaran ini?"
-                                        class="flex-1 bg-green-600 text-white py-2 rounded text-sm hover:bg-green-700 font-medium cursor-pointer">
-                                        <span wire:loading.remove wire:target="verifyPayment('verify')">✓ Verify Payment</span>
-                                        <span wire:loading wire:target="verifyPayment('verify')">Processing...</span>
-                                    </button>
-                                    <button wire:click="verifyPayment('reject')" type="button" wire:confirm="Tolak pembayaran ini?"
-                                        class="flex-1 bg-red-600 text-white py-2 rounded text-sm hover:bg-red-700 font-medium cursor-pointer">
-                                        <span wire:loading.remove wire:target="verifyPayment('reject')">✗ Reject Payment</span>
-                                        <span wire:loading wire:target="verifyPayment('reject')">Processing...</span>
-                                    </button>
-                                </div>
-                                @endif
-                            @endif
-                        </div>
-                    </div>
-
                     {{-- Deliverables --}}
                     <div class="border border-gray-200 rounded mb-5">
                         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
@@ -623,7 +538,7 @@
 
                             {{-- Admin Send Files --}}
                             <h4 class="text-xs font-bold text-gray-600 uppercase tracking-wide mt-4 mb-2">Send to Author</h4>
-                            @foreach(['prosiding_book' => 'Buku Prosiding', 'certificate' => 'Sertifikat'] as $type => $label)
+                            @foreach(['prosiding_book' => 'Buku Prosiding'] as $type => $label)
                             <div class="border border-gray-100 rounded p-3 mb-2">
                                 @php
                                     $existing = $adminDeliverables->firstWhere('type', $type);
@@ -718,6 +633,57 @@
                             @endif
                         </div>
                         @endif
+                    </div>
+                </div>
+
+                {{-- Video Presentasi dari Pemakalah --}}
+                <div class="border border-gray-200 rounded mb-5">
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                        <h3 class="text-sm font-bold text-gray-800">Video Presentasi Pemakalah</h3>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        @if($paper->video_presentation_url)
+                        @php
+                            $adminVidUrl = $paper->video_presentation_url;
+                            $adminEmbedUrl = null;
+                            if (preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_\-]{11})/', $adminVidUrl, $m)) {
+                                $adminEmbedUrl = 'https://www.youtube.com/embed/' . $m[1];
+                            }
+                        @endphp
+                        <div class="rounded overflow-hidden border border-gray-200 bg-gray-50">
+                            @if($adminEmbedUrl)
+                            <div class="aspect-video">
+                                <iframe src="{{ $adminEmbedUrl }}" class="w-full h-full" frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen></iframe>
+                            </div>
+                            @else
+                            <div class="p-3 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                <a href="{{ $adminVidUrl }}" target="_blank" class="text-xs text-blue-600 hover:underline break-all">{{ $adminVidUrl }}</a>
+                            </div>
+                            @endif
+                        </div>
+                        <p class="text-xs text-green-600 font-medium">✅ Video telah diinput oleh pemakalah</p>
+                        @else
+                        <p class="text-sm text-gray-400 italic">Pemakalah belum mengupload link video presentasi.</p>
+                        @endif
+
+                        {{-- Admin can also set/override the video link --}}
+                        <div class="mt-3 pt-3 border-t border-gray-100">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Set/Override Link Video (Admin)</label>
+                            <input wire:model="videoPresentationUrl" type="url"
+                                class="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                placeholder="https://youtu.be/...">
+                            <button wire:click="saveVideoPresentationUrl" type="button"
+                                class="mt-2 px-4 py-1.5 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 cursor-pointer">
+                                <span wire:loading.remove wire:target="saveVideoPresentationUrl">💾 Simpan Video</span>
+                                <span wire:loading wire:target="saveVideoPresentationUrl">Menyimpan...</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 @endif
@@ -1146,12 +1112,12 @@
     </div>
     @endif
 
-    {{-- ═══ Accept Paper Modal (LOA + Invoice) ═══ --}}
+    {{-- ═══ Accept Paper Modal (LOA Only - Pembayaran sudah di Abstract) ═══ --}}
     @if($showAcceptModal)
     <div class="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto my-auto flex flex-col">
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 sticky top-0 bg-white rounded-t-lg z-10">
-                <h3 class="text-lg font-bold text-gray-800">Accept Paper — LOA & Tagihan</h3>
+                <h3 class="text-lg font-bold text-gray-800">Accept Paper — Generate LOA</h3>
                 <button wire:click="closeAcceptModal" type="button" class="text-gray-400 hover:text-gray-600 text-xl cursor-pointer">&times;</button>
             </div>
             <div class="p-5 space-y-4 overflow-y-auto max-h-[75vh]">
@@ -1228,85 +1194,23 @@
                 </div>
                 @endif
 
-                @if($detectedPackageName)
-                {{-- Auto-detected: show info box, no selection needed --}}
-                <div class="bg-teal-50 border border-teal-200 rounded-lg p-3 flex items-start gap-2">
-                    <svg class="w-5 h-5 text-teal-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <div>
-                        <p class="text-xs font-semibold text-teal-700 uppercase tracking-wide">Paket registrasi author</p>
-                        <p class="text-sm font-bold text-teal-900 mt-0.5">{{ $detectedPackageName }}</p>
-                        <p class="text-xs text-teal-600 mt-0.5">Nominal tagihan diisi otomatis dari paket ini.</p>
-                    </div>
-                </div>
-                @elseif(count($conferencePackages))
-                {{-- Not detected: show dropdown for manual selection --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Paket Registrasi</label>
-                    <select wire:model.live="acceptPackageId" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                        <option value="">— Pilih paket / isi nominal manual —</option>
-                        @foreach($conferencePackages as $pkg)
-                            <option value="{{ $pkg['id'] }}">{{ $pkg['label'] }}</option>
-                        @endforeach
-                    </select>
-                    <p class="text-xs text-gray-400 mt-1">Memilih paket akan mengisi nominal otomatis.</p>
-                </div>
-                @endif
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tagihan</label>
-                    @if($acceptInvoiceAmount !== '')
-                        <div class="w-full px-3 py-2.5 bg-emerald-50 border border-emerald-300 rounded text-sm font-bold text-emerald-800">
-                            {{ $acceptInvoiceAmount == '0' ? 'Gratis' : 'Rp ' . number_format((int)$acceptInvoiceAmount, 0, ',', '.') }}
-                        </div>
-                        <input type="hidden" wire:model="acceptInvoiceAmount">
-                    @else
-                        <div class="w-full px-3 py-2.5 bg-gray-50 border border-dashed border-gray-300 rounded text-sm text-gray-400 italic">
-                            — Pilih paket registrasi di atas —
-                        </div>
-                        <input type="hidden" wire:model="acceptInvoiceAmount">
-                    @endif
-                    @error('acceptInvoiceAmount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Tagihan</label>
-                    <input type="text" wire:model="acceptInvoiceDescription" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
-
-                {{-- Info Rekening Bank --}}
-                @php
-                    $bankConf = $paper->conference;
-                    $bankName = $bankConf->payment_bank_name ?? null;
-                    $bankAccount = $bankConf->payment_bank_account ?? null;
-                    $accountHolder = $bankConf->payment_account_holder ?? null;
-                @endphp
-                @if($bankName || $bankAccount)
+                {{-- Info: Pembayaran sudah dilakukan di tahap abstract --}}
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <p class="text-xs font-bold text-blue-800 mb-2 flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                        Info Rekening Pembayaran
-                    </p>
-                    <div class="space-y-1 text-xs">
-                        @if($bankName)
-                        <div class="flex justify-between"><span class="text-gray-500">Bank</span><span class="font-medium text-gray-800">{{ $bankName }}</span></div>
-                        @endif
-                        @if($bankAccount)
-                        <div class="flex justify-between"><span class="text-gray-500">No. Rekening</span><span class="font-mono font-bold text-gray-800">{{ $bankAccount }}</span></div>
-                        @endif
-                        @if($accountHolder)
-                        <div class="flex justify-between"><span class="text-gray-500">Atas Nama</span><span class="font-medium text-gray-800">{{ $accountHolder }}</span></div>
-                        @endif
+                    <div class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>
+                            <p class="text-sm font-medium text-blue-800">Pembayaran sudah dilakukan di tahap abstract</p>
+                            <p class="text-xs text-blue-600 mt-1">Tidak perlu tagihan baru untuk full paper. LOA akan langsung tersedia untuk author.</p>
+                        </div>
                     </div>
-                    <p class="text-[10px] text-blue-600 mt-2 italic">Info ini akan ditampilkan ke author bersama tagihan.</p>
                 </div>
-                @endif
 
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-700">
                     <p class="font-medium mb-1">⚠️ Setelah dikonfirmasi:</p>
                     <ul class="list-disc pl-4 space-y-0.5">
-                        <li>Status paper berubah ke <strong>Menunggu Pembayaran</strong></li>
-                        <li>LOA & tagihan otomatis dikirim ke author</li>
-                        <li>Author <strong>wajib</strong> upload bukti bayar</li>
+                        <li>Status paper berubah ke <strong>Accepted / Completed</strong></li>
+                        <li>LOA tersedia untuk didownload oleh author</li>
+                        <li>Author akan menerima notifikasi</li>
                     </ul>
                 </div>
             </div>

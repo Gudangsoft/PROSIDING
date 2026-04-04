@@ -15,6 +15,7 @@ class PaperDetail extends Component
     public Paper $paper;
     public $revisionFile;
     public string $revisionNotes = '';
+    public string $videoUrl = '';
 
     public function mount(Paper $paper)
     {
@@ -22,6 +23,23 @@ class PaperDetail extends Component
             abort(403);
         }
         $this->paper = $paper;
+        $this->videoUrl = $paper->video_presentation_url ?? '';
+    }
+
+    public function saveVideoUrl()
+    {
+        $this->validate([
+            'videoUrl' => 'nullable|url|max:500',
+        ], [
+            'videoUrl.url' => 'Format URL tidak valid. Masukkan URL yang benar (contoh: https://youtu.be/...).',
+        ]);
+
+        $this->paper->update([
+            'video_presentation_url' => $this->videoUrl ?: null,
+        ]);
+
+        $this->paper->refresh();
+        session()->flash('success', 'Link video presentasi berhasil disimpan!');
     }
 
     public function submitRevision()

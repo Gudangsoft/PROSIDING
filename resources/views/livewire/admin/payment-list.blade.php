@@ -15,6 +15,9 @@
                 <button wire:click="$set('typeFilter', '')" class="px-4 py-2 font-medium transition {{ $typeFilter === '' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }} cursor-pointer">
                     Semua ({{ $allCount }})
                 </button>
+                <button wire:click="$set('typeFilter', 'abstract')" class="px-4 py-2 font-medium transition border-l border-gray-200 {{ $typeFilter === 'abstract' ? 'bg-amber-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }} cursor-pointer">
+                    Abstrak ({{ $abstractCount }})
+                </button>
                 <button wire:click="$set('typeFilter', 'paper')" class="px-4 py-2 font-medium transition border-l border-gray-200 {{ $typeFilter === 'paper' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }} cursor-pointer">
                     Paper ({{ $paperCount }})
                 </button>
@@ -62,6 +65,8 @@
                     <td class="px-4 py-3">
                         @if($payment->type === 'participant')
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">Partisipan</span>
+                        @elseif($payment->type === 'abstract')
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Abstrak</span>
                         @else
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">Paper</span>
                         @endif
@@ -72,6 +77,9 @@
                             @if($payment->user && $payment->user->institution)
                                 <p class="text-xs text-gray-400 truncate">{{ $payment->user->institution }}</p>
                             @endif
+                        @elseif($payment->type === 'abstract')
+                            {{ $payment->abstract?->title ?? '-' }}
+                            <p class="text-xs text-gray-400 truncate">Biaya Registrasi Pemakalah</p>
                         @else
                             {{ $payment->paper->title ?? '-' }}
                         @endif

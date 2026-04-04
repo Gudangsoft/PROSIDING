@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Payment extends Model
 {
     protected $fillable = [
-        'type', 'paper_id', 'registration_package_id', 'user_id', 'invoice_number', 'amount',
+        'type', 'paper_id', 'abstract_id', 'registration_package_id', 'user_id', 'invoice_number', 'amount',
         'description', 'status', 'payment_proof', 'payment_method',
         'paid_at', 'verified_by', 'verified_at', 'admin_notes',
     ];
@@ -22,10 +22,16 @@ class Payment extends Model
     // Type constants
     const TYPE_PAPER = 'paper';
     const TYPE_PARTICIPANT = 'participant';
+    const TYPE_ABSTRACT = 'abstract';
 
     public function paper(): BelongsTo
     {
         return $this->belongsTo(Paper::class);
+    }
+
+    public function abstract(): BelongsTo
+    {
+        return $this->belongsTo(AbstractSubmission::class, 'abstract_id');
     }
 
     public function registrationPackage(): BelongsTo

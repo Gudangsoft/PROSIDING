@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\SetupController;
 use App\Livewire\Author\SubmitPaper;
 use App\Livewire\Author\PaperList as AuthorPaperList;
@@ -8,6 +9,7 @@ use App\Livewire\Author\PaperDetail as AuthorPaperDetail;
 use App\Livewire\Author\PaymentUpload;
 use App\Livewire\Author\DeliverableUpload;
 use App\Livewire\Author\LoaList;
+use App\Livewire\Author\CertificateList as AuthorCertificateList;
 use App\Livewire\Admin\PaperManagement;
 use App\Livewire\Admin\PaperDetail as AdminPaperDetail;
 use App\Livewire\Admin\PaymentList;
@@ -58,6 +60,7 @@ use App\Livewire\Admin\SubmissionFormBuilder;
 use App\Livewire\Admin\OjsIntegration;
 use App\Livewire\Admin\ConferencePageBuilder;
 use App\Livewire\Admin\AcceptanceLetterManager;
+use App\Livewire\Admin\LoaTemplateManager;
 use App\Livewire\Admin\CameraReadyManager;
 use App\Livewire\Admin\RevisionManager;
 use App\Livewire\Admin\SubmissionAnalytics;
@@ -81,15 +84,30 @@ Route::get('/', function () {
 
 // ─── Public Document Verification Routes ───
 Route::get('/verify-loa/{code}', function ($code) {
-    $paper = \App\Models\Paper::where('loa_number', $code)
-        ->with(['user', 'conference'])
-        ->first();
+    $paper = null;
+    $abstract = null;
     
-    return view('verify.loa', compact('paper', 'code'));
+    // Check if it's an abstract LOA
+    if (str_starts_with($code, 'LOA-ABS-')) {
+        $abstractId = (int) str_replace('LOA-ABS-', '', $code);
+        $abstract = \App\Models\AbstractSubmission::with(['user', 'conference'])
+            ->find($abstractId);
+    } else {
+        // Regular paper LOA
+        $paper = \App\Models\Paper::where('loa_number', $code)
+            ->with(['user', 'conference'])
+            ->first();
+    }
+    
+    return view('verify.loa', compact('paper', 'abstract', 'code'));
 })->name('verify-loa');
 
 Route::get('/verify-certificate/{code}', function ($code) {
-    return view('verify.certificate', compact('code'));
+    $certificate = \App\Models\Certificate::where('certificate_number', $code)
+        ->with(['user', 'conference'])
+        ->first();
+    
+    return view('verify.certificate', compact('certificate', 'code'));
 })->name('verify-certificate');
 
 Route::middleware(['auth'])->group(function () {
@@ -113,32 +131,153 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ─── Participant Routes ───
-    Route::middleware(['role:participant'])->prefix('participant')->group(function () {
+    // Accessible by both 'participant' role AND 'author' role (pemakalah yang diterima)
+    Route::middleware(['role:participant,author'])->prefix('participant')->group(function () {
+        Route::redirect('/', '/participant/info')->name('participant.dashboard');
         Route::get('/payment', PaymentProof::class)->name('participant.payment');
         Route::get('/info', ParticipantInfo::class)->name('participant.info');
         Route::get('/materials', ParticipantMaterialList::class)->name('participant.materials');
     });
 
-    // ─── Author Routes ───
-    Route::middleware(['role:author'])->prefix('author')->group(function () {
-        Route::get('/papers', AuthorPaperList::class)->name('author.papers');
-        Route::get('/papers/submit', SubmitPaper::class)->name('author.submit');
-        Route::get('/papers/{paper}', AuthorPaperDetail::class)->name('author.paper.detail');
-        Route::get('/papers/{paper}/payment', PaymentUpload::class)->name('author.paper.payment');
-        Route::get('/papers/{paper}/deliverables', DeliverableUpload::class)->name('author.paper.deliverables');
-        Route::get('/loa', LoaList::class)->name('author.loa');
+    // ─── Abstract Routes (accessible by author AND participant) ───
+    Route::middleware(['role:author,participant'])->prefix('author')->group(function () {
         Route::get('/abstracts', AuthorAbstractList::class)->name('author.abstracts');
         Route::get('/abstracts/create', SubmitAbstract::class)->name('author.abstract.create');
         Route::get('/abstracts/{id}/edit', SubmitAbstract::class)->name('author.abstract.edit');
-        Route::get('/dashboard', AuthorDashboard::class)->name('author.dashboard');
+        Route::get('/papers', AuthorPaperList::class)->name('author.papers');
+        Route::get('/papers/submit', SubmitPaper::class)->name('author.submit');
+        Route::get('/payments', \App\Livewire\Author\PaymentList::class)->name('author.payments');
+        Route::get('/loa', LoaList::class)->name('author.loa');
+        Route::get('/certificates', AuthorCertificateList::class)->name('author.certificates');
+        Route::get('/certificates/{certificate}/download', function (\App\Models\Certificate $certificate) {
+            if ($certificate->user_id !== auth()->id()) abort(403);
+            
+            $template = \App\Models\CertificateTemplate::where('is_default', true)
+                ->where(function ($q) use ($certificate) {
+                    $q->where('conference_id', $certificate->conference_id)
+                      ->orWhereNull('conference_id');
+                })
+                ->where(function ($q) use ($certificate) {
+                    $q->where('type', $certificate->type)
+                      ->orWhere('type', 'all');
+                })
+                ->first();
+
+            if ($template) {
+                $html = $template->render($certificate);
+                $orientation = $template->orientation;
+                $paperSize = $template->paper_size;
+            } else {
+                $html = '<html><body style="font-family:serif;text-align:center;padding:80px;">
+<h1 style="font-size:36px;color:#1e40af;">SERTIFIKAT</h1>
+<p style="font-size:18px;margin-top:30px;">Diberikan kepada:</p>
+<h2 style="font-size:32px;border-bottom:2px solid #1e40af;display:inline-block;padding-bottom:8px;">' . e($certificate->recipient_name) . '</h2>
+<p style="font-size:16px;margin-top:20px;">Sebagai <strong>' . e($certificate->type_label) . '</strong> pada</p>
+<p style="font-size:20px;font-weight:bold;">' . e($certificate->conference?->name ?? '') . '</p>
+<p style="margin-top:40px;color:#6b7280;">No. Sertifikat: ' . e($certificate->certificate_number) . ' | ' . ($certificate->issued_at?->isoFormat('D MMMM Y') ?? date('d F Y')) . '</p>
+</body></html>';
+                $orientation = 'landscape';
+                $paperSize = 'a4';
+            }
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper($paperSize, $orientation);
+            $filename = str_replace(['/', '\\'], '-', $certificate->certificate_number);
+            return $pdf->download("sertifikat-{$filename}.pdf");
+        })->name('author.certificates.download');
+        Route::get('/loa/download/{type}/{id}', function (string $type, int $id) {
+            $user = auth()->user();
+            
+            if ($type === 'abstract') {
+                $abstract = \App\Models\AbstractSubmission::where('user_id', $user->id)
+                    ->where('status', 'approved')
+                    ->whereHas('payment', fn($q) => $q->where('status', 'verified'))
+                    ->with(['conference', 'payment', 'user'])
+                    ->findOrFail($id);
+                
+                // Generate LOA PDF for abstract
+                $conference = $abstract->conference;
+                $loaNumber = 'LOA-ABS-' . str_pad($abstract->id, 5, '0', STR_PAD_LEFT);
+                
+                $html = view('pdf.loa-abstract', [
+                    'abstract' => $abstract,
+                    'conference' => $conference,
+                    'loaNumber' => $loaNumber,
+                    'user' => $abstract->user,
+                ])->render();
+                
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper('a4', 'portrait');
+                return $pdf->download("LOA-{$loaNumber}.pdf");
+            }
+            
+            abort(404);
+        })->name('author.loa.download');
+    });
+
+    // ─── Author Routes (author AND participant can access paper details) ───
+    Route::middleware(['role:author,participant'])->prefix('author')->group(function () {
+        Route::get('/papers/{paper}', AuthorPaperDetail::class)->name('author.paper.detail');
+        Route::get('/papers/{paper}/payment', PaymentUpload::class)->name('author.paper.payment');
+        Route::get('/papers/{paper}/deliverables', DeliverableUpload::class)->name('author.paper.deliverables');
         Route::get('/papers/{paper}/camera-ready', CameraReadyUpload::class)->name('author.paper.camera-ready');
         Route::get('/papers/{paper}/revisions', RevisionRequestView::class)->name('author.paper.revisions');
+        
+        // Certificate download for author
+        Route::get('/papers/{paper}/certificate', function (\App\Models\Paper $paper) {
+            if ($paper->user_id !== auth()->id()) abort(403);
+            $certificate = $paper->certificate;
+            if (!$certificate) abort(404, 'Sertifikat belum tersedia');
+            
+            $template = \App\Models\CertificateTemplate::where('is_default', true)
+                ->where(function ($q) use ($certificate) {
+                    $q->where('conference_id', $certificate->conference_id)
+                      ->orWhereNull('conference_id');
+                })
+                ->where(function ($q) use ($certificate) {
+                    $q->where('type', $certificate->type)
+                      ->orWhere('type', 'all');
+                })
+                ->first();
+
+            if ($template) {
+                $html = $template->render($certificate);
+                $orientation = $template->orientation;
+                $paperSize = $template->paper_size;
+            } else {
+                $html = '<html><body style="font-family:serif;text-align:center;padding:80px;">
+<h1 style="font-size:36px;color:#1e40af;">SERTIFIKAT</h1>
+<p style="font-size:18px;margin-top:30px;">Diberikan kepada:</p>
+<h2 style="font-size:32px;border-bottom:2px solid #1e40af;display:inline-block;padding-bottom:8px;">' . e($certificate->recipient_name) . '</h2>
+<p style="font-size:16px;margin-top:20px;">Sebagai <strong>' . e($certificate->type_label) . '</strong> pada</p>
+<p style="font-size:20px;font-weight:bold;">' . e($certificate->conference?->name ?? '') . '</p>
+<p style="margin-top:40px;color:#6b7280;">No. Sertifikat: ' . e($certificate->certificate_number) . ' | ' . ($certificate->issued_at?->isoFormat('D MMMM Y') ?? date('d F Y')) . '</p>
+</body></html>';
+                $orientation = 'landscape';
+                $paperSize = 'a4';
+            }
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper($paperSize, $orientation);
+            $filename = str_replace(['/', '\\'], '-', $certificate->certificate_number);
+            return $pdf->download("sertifikat-{$filename}.pdf");
+        })->name('author.certificate.download');
+    });
+
+    // ─── Author-only Dashboard ───
+    Route::middleware(['role:author'])->prefix('author')->group(function () {
+        Route::get('/dashboard', AuthorDashboard::class)->name('author.dashboard');
     });
 
     // ─── Reviewer Routes ───
     Route::middleware(['role:reviewer'])->prefix('reviewer')->group(function () {
         Route::get('/reviews', ReviewList::class)->name('reviewer.reviews');
         Route::get('/reviews/{review}', ReviewForm::class)->name('reviewer.review.form');
+    });
+
+    // ─── Treasurer (Bendahara) Routes ───
+    Route::middleware(['role:treasurer'])->prefix('treasurer')->group(function () {
+        Route::get('/payments', PaymentList::class)->name('treasurer.payments');
+        Route::get('/payments/export', [PaymentExportController::class, 'export'])->name('treasurer.payments.export');
+        Route::get('/reports', ReportsManager::class)->name('treasurer.reports');
+        Route::get('/reports/revenue', [ReportExportController::class, 'revenue'])->name('treasurer.reports.revenue');
     });
 
     // ─── Admin/Editor Shared Routes (Papers, Payments, Conferences) ───
@@ -151,7 +290,48 @@ Route::middleware(['auth'])->group(function () {
 
         // New Feature Routes
         Route::get('/abstracts', AbstractManagement::class)->name('admin.abstracts');
+        Route::get('/abstracts/{abstract}/download', function (\App\Models\AbstractSubmission $abstract) {
+            if (!$abstract->abstract_file_path || !Storage::disk('public')->exists($abstract->abstract_file_path)) {
+                abort(404, 'File abstrak tidak ditemukan.');
+            }
+            return Storage::disk('public')->download($abstract->abstract_file_path, $abstract->abstract_file_name ?? 'abstract.docx');
+        })->name('admin.abstract.download');
         Route::get('/certificates', CertificateManager::class)->name('admin.certificates');
+        Route::get('/certificates/{certificate}/download', function (\App\Models\Certificate $certificate) {
+            // Try to find a matching template
+            $template = \App\Models\CertificateTemplate::where('is_default', true)
+                ->where(function ($q) use ($certificate) {
+                    $q->where('conference_id', $certificate->conference_id)
+                      ->orWhereNull('conference_id');
+                })
+                ->where(function ($q) use ($certificate) {
+                    $q->where('type', $certificate->type)
+                      ->orWhere('type', 'all');
+                })
+                ->first();
+
+            if ($template) {
+                $html = $template->render($certificate);
+                $orientation = $template->orientation;
+                $paperSize = $template->paper_size;
+            } else {
+                // Fallback to default template
+                $html = '<html><body style="font-family:serif;text-align:center;padding:80px;">
+<h1 style="font-size:36px;color:#1e40af;">SERTIFIKAT</h1>
+<p style="font-size:18px;margin-top:30px;">Diberikan kepada:</p>
+<h2 style="font-size:32px;border-bottom:2px solid #1e40af;display:inline-block;padding-bottom:8px;">' . e($certificate->recipient_name) . '</h2>
+<p style="font-size:16px;margin-top:20px;">Sebagai <strong>' . e($certificate->type_label) . '</strong> pada</p>
+<p style="font-size:20px;font-weight:bold;">' . e($certificate->conference?->name ?? '') . '</p>
+<p style="margin-top:40px;color:#6b7280;">No. Sertifikat: ' . e($certificate->certificate_number) . ' | ' . ($certificate->issued_at?->isoFormat('D MMMM Y') ?? date('d F Y')) . '</p>
+</body></html>';
+                $orientation = 'landscape';
+                $paperSize = 'a4';
+            }
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper($paperSize, $orientation);
+            $filename = str_replace(['/', '\\'], '-', $certificate->certificate_number);
+            return $pdf->download("sertifikat-{$filename}.pdf");
+        })->name('admin.certificate.download');
         Route::get('/broadcast-email', BroadcastEmailManager::class)->name('admin.broadcast');
         Route::get('/statistics', DashboardStats::class)->name('admin.stats');
         Route::get('/reports', ReportsManager::class)->name('admin.reports');
@@ -159,6 +339,7 @@ Route::middleware(['auth'])->group(function () {
 
         // New Feature Routes (Batch 3)
         Route::get('/acceptance-letters', AcceptanceLetterManager::class)->name('admin.acceptance-letters');
+        Route::get('/loa-templates', LoaTemplateManager::class)->name('admin.loa-templates');
         Route::get('/camera-ready', CameraReadyManager::class)->name('admin.camera-ready');
         Route::get('/revisions', RevisionManager::class)->name('admin.revisions');
         Route::get('/analytics', SubmissionAnalytics::class)->name('admin.analytics');

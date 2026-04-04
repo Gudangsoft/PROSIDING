@@ -4,6 +4,21 @@
         <p class="text-gray-500 text-sm mt-1">Unggah paper Anda untuk prosiding LPKD-APJI</p>
     </div>
 
+    @if($fromAbstract && $abstractSubmission)
+    <div class="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-green-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+                <p class="text-sm font-semibold text-green-800">Data dari Abstrak yang Disetujui</p>
+                <p class="text-xs text-green-700 mt-1">Form ini telah diisi otomatis dari abstrak Anda yang sudah disetujui. Anda dapat mengedit jika ada perubahan.</p>
+                @if($abstractSubmission->abstract_file_name)
+                <p class="text-xs text-green-700 mt-2">File abstrak: <span class="font-medium">{{ $abstractSubmission->abstract_file_name }}</span> (sudah tersimpan)</p>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endif
+
     <form wire:submit="submit" class="bg-white rounded-xl shadow-sm border p-6 space-y-6">
         {{-- Title --}}
         <div>
@@ -93,9 +108,17 @@
 
         {{-- File Upload --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {{-- File Abstrak (Wajib) --}}
+            {{-- File Abstrak --}}
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">File Abstrak (PDF/DOC/DOCX) <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    File Abstrak (PDF/DOC/DOCX) 
+                    @if(!$fromAbstract)<span class="text-red-500">*</span>@endif
+                </label>
+                @if($fromAbstract && $abstractSubmission?->abstract_file_path)
+                <div class="mb-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-xs text-green-700">File dari abstrak sudah tersedia. Upload baru jika ingin mengganti.</p>
+                </div>
+                @endif
                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition">
                     <input type="file" wire:model="abstractFile" class="w-full text-sm" accept=".pdf,.doc,.docx">
                     <p class="text-xs text-gray-400 mt-1">Maks. 10MB</p>

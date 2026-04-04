@@ -72,77 +72,218 @@
             <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
                 
                 <a href="<?php echo e(route('dashboard')); ?>"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                   <?php echo e(request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
-                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                   <?php echo e(request()->routeIs('dashboard') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'); ?>">
+                    <div class="<?php echo e(request()->routeIs('dashboard') ? 'bg-white/20' : 'bg-blue-100'); ?> p-2 rounded-lg">
+                        <svg class="w-5 h-5 <?php echo e(request()->routeIs('dashboard') ? 'text-white' : 'text-blue-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    </div>
                     Dashboard
                 </a>
 
                 
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->isAuthor()): ?>
-                <div class="pt-4">
-                    <p class="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Author</p>
-                    <a href="<?php echo e(route('author.dashboard')); ?>"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                       <?php echo e(request()->routeIs('author.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                        Dashboard Saya
-                    </a>
+                <div class="pt-5">
+                    <p class="px-3 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                        Pemakalah
+                    </p>
+                    
+                    
                     <a href="<?php echo e(route('author.papers')); ?>"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                       <?php echo e(request()->routeIs('author.papers') || request()->routeIs('author.paper.detail') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('author.papers') || request()->routeIs('author.paper.detail') ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md shadow-indigo-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('author.papers') || request()->routeIs('author.paper.detail') ? 'bg-white/20' : 'bg-indigo-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('author.papers') || request()->routeIs('author.paper.detail') ? 'text-white' : 'text-indigo-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
                         Paper Saya
                     </a>
+                    
+                    
                     <a href="<?php echo e(route('author.submit')); ?>"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                       <?php echo e(request()->routeIs('author.submit') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('author.submit') ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('author.submit') ? 'bg-white/20' : 'bg-emerald-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('author.submit') ? 'text-white' : 'text-emerald-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                        </div>
                         Submit Paper
                     </a>
+                    
+                    
+                    <a href="<?php echo e(route('author.abstracts')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('author.abstracts') ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-md shadow-violet-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('author.abstracts') ? 'bg-white/20' : 'bg-violet-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('author.abstracts') ? 'text-white' : 'text-violet-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        </div>
+                        Abstrak Saya
+                    </a>
+                    
+                    
+                    <a href="<?php echo e(route('author.abstract.create')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('author.abstract.create') ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md shadow-cyan-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('author.abstract.create') ? 'bg-white/20' : 'bg-cyan-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('author.abstract.create') ? 'text-white' : 'text-cyan-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        Submit Abstrak
+                    </a>
+                    
+                    
                     <a href="<?php echo e(route('author.loa')); ?>"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                       <?php echo e(request()->routeIs('author.loa') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('author.loa') ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('author.loa') ? 'bg-white/20' : 'bg-amber-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('author.loa') ? 'text-white' : 'text-amber-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                        </div>
                         LOA & Tagihan
                     </a>
+                    
+                    
+                    <a href="<?php echo e(route('author.certificates')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('author.certificates*') ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-white shadow-md shadow-yellow-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('author.certificates*') ? 'bg-white/20' : 'bg-yellow-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('author.certificates*') ? 'text-white' : 'text-yellow-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                        </div>
+                        Sertifikat Saya
+                    </a>
+                    
+                    
+                    <a href="<?php echo e(route('participant.materials')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('participant.materials') ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md shadow-rose-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('participant.materials') ? 'bg-white/20' : 'bg-rose-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('participant.materials') ? 'text-white' : 'text-rose-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                        </div>
+                        Materi Konferensi
+                    </a>
+                </div>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->isParticipant() && !Auth::user()->isAuthor()): ?>
+                <div class="pt-5">
+                    <p class="px-3 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2 h-2 bg-teal-500 rounded-full"></span>
+                        Peserta
+                    </p>
+                    
+                    <a href="<?php echo e(route('participant.info')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('participant.info') ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-md shadow-teal-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('participant.info') ? 'bg-white/20' : 'bg-teal-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('participant.info') ? 'text-white' : 'text-teal-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </div>
+                        Info Peserta
+                    </a>
                     <a href="<?php echo e(route('author.abstracts')); ?>"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                       <?php echo e(request()->routeIs('author.abstract*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10"/></svg>
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('author.abstracts') ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-md shadow-violet-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('author.abstracts') ? 'bg-white/20' : 'bg-violet-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('author.abstracts') ? 'text-white' : 'text-violet-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        </div>
                         Abstrak Saya
+                    </a>
+                    <a href="<?php echo e(route('author.abstract.create')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('author.abstract.create') ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md shadow-cyan-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('author.abstract.create') ? 'bg-white/20' : 'bg-cyan-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('author.abstract.create') ? 'text-white' : 'text-cyan-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        Submit Abstrak
+                    </a>
+                    <a href="<?php echo e(route('participant.materials')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('participant.materials') ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md shadow-rose-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('participant.materials') ? 'bg-white/20' : 'bg-rose-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('participant.materials') ? 'text-white' : 'text-rose-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                        </div>
+                        Materi Konferensi
+                    </a>
+                    <a href="<?php echo e(route('participant.payment')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('participant.payment') ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md shadow-green-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('participant.payment') ? 'bg-white/20' : 'bg-green-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('participant.payment') ? 'text-white' : 'text-green-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        </div>
+                        Pembayaran
                     </a>
                 </div>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                 
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->isReviewer()): ?>
-                <div class="pt-4">
-                    <p class="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reviewer</p>
+                <div class="pt-5">
+                    <p class="px-3 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2 h-2 bg-orange-500 rounded-full"></span>
+                        Reviewer
+                    </p>
                     <a href="<?php echo e(route('reviewer.reviews')); ?>"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                       <?php echo e(request()->routeIs('reviewer.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('reviewer.*') ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('reviewer.*') ? 'bg-white/20' : 'bg-orange-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('reviewer.*') ? 'text-white' : 'text-orange-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        </div>
                         Tugas Review
                     </a>
                 </div>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                 
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->isTreasurer()): ?>
+                <div class="pt-5">
+                    <p class="px-3 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                        Bendahara
+                    </p>
+                    <a href="<?php echo e(route('treasurer.payments')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('treasurer.payments') ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('treasurer.payments') ? 'bg-white/20' : 'bg-emerald-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('treasurer.payments') ? 'text-white' : 'text-emerald-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        </div>
+                        Verifikasi Pembayaran
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($sidebarPendingPayments) && $sidebarPendingPayments > 0): ?>
+                            <span class="ml-auto bg-white text-emerald-600 text-xs font-bold px-2 py-0.5 rounded-full"><?php echo e($sidebarPendingPayments); ?></span>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    </a>
+                    <a href="<?php echo e(route('treasurer.reports')); ?>"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('treasurer.reports*') ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-md shadow-teal-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('treasurer.reports*') ? 'bg-white/20' : 'bg-teal-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('treasurer.reports*') ? 'text-white' : 'text-teal-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        Laporan Keuangan
+                    </a>
+                </div>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->isEditor()): ?>
-                <div class="pt-4">
-                    <p class="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Editor</p>
+                <div class="pt-5">
+                    <p class="px-3 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                        Editor
+                    </p>
                     <a href="<?php echo e(route('admin.papers')); ?>"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                       <?php echo e(request()->routeIs('admin.papers') || request()->routeIs('admin.paper.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mb-1
+                       <?php echo e(request()->routeIs('admin.papers') || request()->routeIs('admin.paper.*') ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md shadow-purple-200' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'); ?>">
+                        <div class="<?php echo e(request()->routeIs('admin.papers') || request()->routeIs('admin.paper.*') ? 'bg-white/20' : 'bg-purple-100'); ?> p-2 rounded-lg">
+                            <svg class="w-5 h-5 <?php echo e(request()->routeIs('admin.papers') || request()->routeIs('admin.paper.*') ? 'text-white' : 'text-purple-600'); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        </div>
                         Kelola Paper
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($sidebarPendingPapers) && $sidebarPendingPapers > 0): ?>
+                            <span class="ml-auto bg-white text-purple-600 text-xs font-bold px-2 py-0.5 rounded-full"><?php echo e($sidebarPendingPapers); ?></span>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </a>
                     <a href="<?php echo e(route('admin.payments')); ?>"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
                        <?php echo e(request()->routeIs('admin.payments') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         Pembayaran
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($sidebarPendingPayments) && $sidebarPendingPayments > 0): ?>
+                            <span class="ml-auto bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?php echo e($sidebarPendingPayments); ?></span>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </a>
                     <a href="<?php echo e(route('admin.conferences')); ?>"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
@@ -168,18 +309,27 @@
                        <?php echo e(request()->routeIs('admin.papers') || request()->routeIs('admin.paper.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                         Kelola Paper
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($sidebarPendingPapers) && $sidebarPendingPapers > 0): ?>
+                            <span class="ml-auto bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?php echo e($sidebarPendingPapers); ?></span>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </a>
                     <a href="<?php echo e(route('admin.payments')); ?>"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
                        <?php echo e(request()->routeIs('admin.payments') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         Pembayaran
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($sidebarPendingPayments) && $sidebarPendingPayments > 0): ?>
+                            <span class="ml-auto bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?php echo e($sidebarPendingPayments); ?></span>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </a>
                     <a href="<?php echo e(route('admin.abstracts')); ?>"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
                        <?php echo e(request()->routeIs('admin.abstracts') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10"/></svg>
                         Kelola Abstrak
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($sidebarPendingAbstracts) && $sidebarPendingAbstracts > 0): ?>
+                            <span class="ml-auto bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?php echo e($sidebarPendingAbstracts); ?></span>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </a>
                     <a href="<?php echo e(route('admin.auto-reviewer')); ?>"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
@@ -187,23 +337,23 @@
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         Auto Reviewer
                     </a>
-                    <a href="<?php echo e(route('admin.acceptance-letters')); ?>"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                       <?php echo e(request()->routeIs('admin.acceptance-letters') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Acceptance Letter
-                    </a>
                     <a href="<?php echo e(route('admin.camera-ready')); ?>"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
                        <?php echo e(request()->routeIs('admin.camera-ready') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         Camera-Ready
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($sidebarPendingCameraReady) && $sidebarPendingCameraReady > 0): ?>
+                            <span class="ml-auto bg-purple-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?php echo e($sidebarPendingCameraReady); ?></span>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </a>
                     <a href="<?php echo e(route('admin.revisions')); ?>"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
                        <?php echo e(request()->routeIs('admin.revisions') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'); ?>">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         Revision Manager
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($sidebarRevisedPapers) && $sidebarRevisedPapers > 0): ?>
+                            <span class="ml-auto bg-cyan-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?php echo e($sidebarRevisedPapers); ?></span>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </a>
                     <a href="<?php echo e(route('admin.analytics')); ?>"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition

@@ -8,25 +8,64 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-lg max-w-md w-full p-8">
+        @if($certificate)
+        {{-- Valid Certificate --}}
         <div class="text-center mb-6">
-            <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+            <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-blue-700">Verifikasi Sertifikat</h1>
+            <h1 class="text-2xl font-bold text-green-700">Sertifikat Valid</h1>
             <p class="text-gray-500 text-sm mt-1">Nomor: <code class="font-mono bg-gray-100 px-2 py-0.5 rounded">{{ $code }}</code></p>
         </div>
 
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-            <p class="text-sm text-yellow-800">
-                Dokumen sertifikat dengan kode <strong>{{ $code }}</strong> 
-                terdaftar dalam sistem.
-            </p>
-            <p class="text-xs text-yellow-700 mt-2">
-                Untuk konfirmasi lebih lanjut, hubungi panitia penyelenggara.
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+            <div class="flex justify-between items-start">
+                <span class="text-sm text-gray-600">Penerima:</span>
+                <span class="text-sm font-semibold text-gray-800 text-right">{{ $certificate->recipient_name }}</span>
+            </div>
+            <div class="flex justify-between items-start">
+                <span class="text-sm text-gray-600">Tipe:</span>
+                <span class="text-sm font-semibold text-gray-800">{{ $certificate->type_label }}</span>
+            </div>
+            <div class="flex justify-between items-start">
+                <span class="text-sm text-gray-600">Event:</span>
+                <span class="text-sm font-semibold text-gray-800 text-right">{{ $certificate->conference?->name ?? '-' }}</span>
+            </div>
+            <div class="flex justify-between items-start">
+                <span class="text-sm text-gray-600">Tanggal Terbit:</span>
+                <span class="text-sm font-semibold text-gray-800">{{ $certificate->issued_at?->format('d M Y') ?? '-' }}</span>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4 text-center">
+            <p class="text-xs text-blue-800">
+                ✅ Sertifikat ini <strong>ASLI</strong> dan terdaftar dalam sistem.
             </p>
         </div>
+        @else
+        {{-- Invalid Certificate --}}
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-red-700">Sertifikat Tidak Valid</h1>
+            <p class="text-gray-500 text-sm mt-1">Nomor: <code class="font-mono bg-gray-100 px-2 py-0.5 rounded">{{ $code }}</code></p>
+        </div>
+
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <p class="text-sm text-red-800">
+                ⚠️ Sertifikat dengan nomor <strong>{{ $code }}</strong> 
+                <strong>TIDAK DITEMUKAN</strong> dalam sistem.
+            </p>
+            <p class="text-xs text-red-700 mt-2">
+                Pastikan nomor sertifikat yang Anda masukkan benar, atau hubungi panitia penyelenggara.
+            </p>
+        </div>
+        @endif
         
         <div class="mt-6 pt-4 border-t border-gray-100 text-center">
             <p class="text-xs text-gray-400">Verifikasi pada {{ now()->format('d F Y, H:i') }} WIB</p>

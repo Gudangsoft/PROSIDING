@@ -14,23 +14,32 @@ class MaterialList extends Component
     {
         $user = Auth::user();
 
-        // Ambil semua conference_id yang sudah diverifikasi pembayarannya
+        // Ambil conference_id dari pembayaran peserta yang terverifikasi
         $verifiedConferenceIds = Payment::where('user_id', $user->id)
             ->where('type', Payment::TYPE_PARTICIPANT)
             ->where('status', 'verified')
             ->with('registrationPackage')
             ->get()
             ->map(function ($payment) {
-                // Ambil conference_id dari registration package
                 if ($payment->registrationPackage) {
                     return $payment->registrationPackage->conference_id;
                 }
-                // Fallback: cari konferensi aktif jika tidak ada package
                 return Conference::active()->value('id');
             })
             ->filter()
-            ->unique()
-            ->values();
+            ->unique();
+
+        // Pemakalah (author): beri akses juga bila ada paper yang pembayarannya terverifikasi
+        if ($user->isAuthor()) {
+            $authorConferenceIds = \App\Models\Paper::where('user_id', $user->id)
+                ->whereIn('status', ['payment_verified', 'deliverables_pending', 'completed'])
+                ->pluck('conference_id')
+                ->filter()
+                ->unique();
+            $verifiedConferenceIds = $verifiedConferenceIds->merge($authorConferenceIds)->unique()->values();
+        } else {
+            $verifiedConferenceIds = $verifiedConferenceIds->values();
+        }
 
         // Ambil data konferensi beserta materinya, dikelompokkan per konferensi
         $conferenceGroups = collect();

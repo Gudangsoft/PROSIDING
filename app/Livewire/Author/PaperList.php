@@ -14,6 +14,7 @@ class PaperList extends Component
     public function render()
     {
         $papers = Paper::where('user_id', Auth::id())
+            ->with('certificate')
             ->when($this->search, fn($q) => $q->where('title', 'like', "%{$this->search}%"))
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->latest()
