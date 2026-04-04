@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - Prosiding LPKD-APJI')
+@section('title', 'Dashboard - ' . \App\Models\Setting::getValue('site_name', config('app.name', 'Prosiding')))
 
 @section('content')
 <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
